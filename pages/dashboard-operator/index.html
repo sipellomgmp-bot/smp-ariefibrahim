@@ -1,1 +1,519 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Operator — SMP ARIEFIBRAHIM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy-darkest: #0c1a33;
+    --navy-dark: #14284d;
+    --navy: #1a3260;
+    --gold: #d4af37;
+    --gold-light: #e8ca6a;
+    --cream: #f7f6f2;
+    --ink: #1a2233;
+    --ink-soft: #5b6478;
+    --border-soft: #e3e0d5;
+    --green: #1e7a33;
+    --green-bg: #eaf6ec;
+    --red: #b3261e;
+    --red-bg: #fdecec;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+  /* ===== HEADER ===== */
+  .topbar {
+    background: var(--navy-dark);
+    color: #fff;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 12px; }
+  .topbar-brand .mark {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topbar-brand .mark svg { width: 18px; height: 18px; stroke: var(--gold-light); }
+  .topbar-brand .title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 17px; }
+  .topbar-brand .subtitle { font-size: 11px; color: #b9c2d6; letter-spacing: 1px; }
+  .topbar-user { display: flex; align-items: center; gap: 14px; font-size: 13.5px; }
+  .topbar-user .name { font-weight: 600; }
+  .topbar-user .role-tag {
+    background: rgba(212,175,55,0.18); color: var(--gold-light);
+    padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .btn-logout {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    color: #fff; padding: 7px 14px; border-radius: 8px; font-size: 12.5px;
+    cursor: pointer; font-weight: 500;
+  }
+  .btn-logout:hover { background: rgba(255,255,255,0.18); }
+
+  /* ===== TABS ===== */
+  .tabbar {
+    background: #fff; border-bottom: 1px solid var(--border-soft);
+    display: flex; gap: 4px; padding: 0 28px; overflow-x: auto;
+  }
+  .tab-btn {
+    background: none; border: none; padding: 14px 18px; font-size: 13.5px;
+    font-weight: 600; color: var(--ink-soft); cursor: pointer;
+    border-bottom: 3px solid transparent; white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--navy-dark); border-bottom-color: var(--gold); }
+
+  /* ===== CONTENT ===== */
+  .content { padding: 28px; max-width: 1100px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .summary-card {
+    background: #fff; border: 1px solid var(--border-soft); border-radius: 12px; padding: 18px 20px;
+  }
+  .summary-card .label { font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-bottom: 6px; }
+  .summary-card .value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--navy-dark); }
+
+  .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .panel-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--navy-dark); }
+  .btn-primary {
+    background: var(--navy-dark); color: #fff; border: none; padding: 10px 18px;
+    border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: var(--navy); }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-soft); }
+  thead { background: var(--navy-dark); }
+  th { color: #fff; text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
+  td { padding: 12px 16px; font-size: 13.5px; border-top: 1px solid var(--border-soft); }
+  tbody tr:hover { background: #fafaf7; }
+
+  .badge { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .badge.aktif { background: var(--green-bg); color: var(--green); }
+  .badge.nonaktif { background: var(--red-bg); color: var(--red); }
+
+  .link-action { background: none; border: none; color: var(--navy); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .link-action.danger { color: var(--red); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--ink-soft); font-size: 13.5px; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(12,26,51,0.5);
+    align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: #fff; border-radius: 14px; padding: 26px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; color: var(--navy-dark); margin-bottom: 18px; }
+  .field-group { margin-bottom: 14px; }
+  .field-group label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+  .field-group input, .field-group select {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-soft); border-radius: 8px;
+    font-size: 13.5px; font-family: 'Inter', sans-serif;
+  }
+  .field-group input:focus, .field-group select:focus { outline: none; border-color: var(--navy); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-secondary {
+    flex: 1; background: #fff; border: 1.5px solid var(--border-soft); padding: 10px; border-radius: 8px;
+    font-size: 13.5px; font-weight: 600; cursor: pointer; color: var(--ink-soft);
+  }
+  .modal-actions .btn-primary { flex: 1; justify-content: center; }
+
+  .msg-inline { padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 14px; display: none; }
+  .msg-inline.show { display: block; }
+  .msg-inline.error { background: var(--red-bg); color: var(--red); }
+  .msg-inline.success { background: var(--green-bg); color: var(--green); }
+
+  /* ===== FOOTER (branding developer, sesuai keputusan) ===== */
+  .app-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; margin-top: 20px; border-top: 1px solid var(--border-soft);
+    font-size: 11.5px; color: var(--ink-soft); max-width: 1100px; margin-left: auto; margin-right: auto;
+  }
+  .app-footer .dev-mark {
+    width: 22px; height: 22px; border-radius: 5px; background: var(--navy-dark);
+    color: var(--gold-light); font-size: 9px; font-weight: 800;
+    display: inline-flex; align-items: center; justify-content: center; margin-right: 6px; vertical-align: middle;
+  }
+
+  @media (max-width: 720px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    table, thead, tbody, th, td, tr { font-size: 12px; }
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/></svg></div>
+    <div>
+      <div class="title">SMP ARIEFIBRAHIM</div>
+      <div class="subtitle">DASHBOARD OPERATOR</div>
+    </div>
+  </div>
+  <div class="topbar-user">
+    <span class="name" id="userName">-</span>
+    <span class="role-tag" id="userRole">-</span>
+    <button class="btn-logout" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn active" data-tab="ringkasan">Ringkasan</button>
+  <button class="tab-btn" data-tab="siswa">Data Siswa</button>
+  <button class="tab-btn" data-tab="guru">Data Guru</button>
+  <button class="tab-btn" data-tab="kelas">Data Kelas</button>
+</div>
+
+<div class="content">
+
+  <!-- ===== TAB RINGKASAN ===== -->
+  <div class="tab-panel active" id="panel-ringkasan">
+    <div class="summary-grid">
+      <div class="summary-card"><div class="label">Total Siswa Aktif</div><div class="value" id="sumSiswa">-</div></div>
+      <div class="summary-card"><div class="label">Total Guru Aktif</div><div class="value" id="sumGuru">-</div></div>
+      <div class="summary-card"><div class="label">Total Kelas</div><div class="value" id="sumKelas">-</div></div>
+      <div class="summary-card"><div class="label">Absen Hari Ini</div><div class="value" id="sumAbsen">-</div></div>
+    </div>
+    <p style="font-size:13.5px; color:var(--ink-soft);">Selamat datang di Dashboard Operator. Gunakan tab di atas untuk mulai menambahkan data siswa, guru, dan kelas.</p>
+  </div>
+
+  <!-- ===== TAB SISWA ===== -->
+  <div class="tab-panel" id="panel-siswa">
+    <div class="panel-header">
+      <div class="panel-title">Data Siswa</div>
+      <button class="btn-primary" id="btnTambahSiswa">+ Tambah Siswa</button>
+    </div>
+    <table>
+      <thead><tr><th>NIS</th><th>Nama Lengkap</th><th>Kelas</th><th>Status</th><th></th></tr></thead>
+      <tbody id="tabelSiswa"><tr><td colspan="5" class="empty-state">Memuat data...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ===== TAB GURU ===== -->
+  <div class="tab-panel" id="panel-guru">
+    <div class="panel-header">
+      <div class="panel-title">Data Guru</div>
+      <button class="btn-primary" id="btnTambahGuru">+ Tambah Guru</button>
+    </div>
+    <table>
+      <thead><tr><th>NIP/NUPTK</th><th>Nama Lengkap</th><th>No. HP</th><th>Status</th><th></th></tr></thead>
+      <tbody id="tabelGuru"><tr><td colspan="5" class="empty-state">Memuat data...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ===== TAB KELAS ===== -->
+  <div class="tab-panel" id="panel-kelas">
+    <div class="panel-header">
+      <div class="panel-title">Data Kelas</div>
+      <button class="btn-primary" id="btnTambahKelas">+ Tambah Kelas</button>
+    </div>
+    <table>
+      <thead><tr><th>Nama Kelas</th><th>Tingkat</th><th>Wali Kelas</th><th>Tahun Ajaran</th></tr></thead>
+      <tbody id="tabelKelas"><tr><td colspan="4" class="empty-state">Memuat data...</td></tr></tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="app-footer">
+  <span>© 2026 SMP ARIEFIBRAHIM — Sistem Presensi Digital</span>
+  <span><span class="dev-mark">EDH</span>Developed by Edoy D'Hagane</span>
+</div>
+
+<!-- ===== MODAL: TAMBAH SISWA ===== -->
+<div class="modal-overlay" id="modalSiswa">
+  <div class="modal-box">
+    <div class="modal-title">Tambah Siswa Baru</div>
+    <div class="msg-inline error" id="msgSiswa"></div>
+    <div class="field-group"><label>NIS</label><input type="text" id="inputNis"></div>
+    <div class="field-group"><label>NISN</label><input type="text" id="inputNisn"></div>
+    <div class="field-group"><label>Nama Lengkap</label><input type="text" id="inputNamaSiswa"></div>
+    <div class="field-group"><label>Kelas</label><select id="inputKelasSiswa"><option value="">-- Pilih Kelas --</option></select></div>
+    <div class="field-group"><label>Jenis Kelamin</label>
+      <select id="inputJK"><option value="">-- Pilih --</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+    </div>
+    <div class="field-group"><label>Alamat</label><input type="text" id="inputAlamatSiswa"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="tutupModal('modalSiswa')">Batal</button>
+      <button class="btn-primary" id="btnSimpanSiswa">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH GURU ===== -->
+<div class="modal-overlay" id="modalGuru">
+  <div class="modal-box">
+    <div class="modal-title">Tambah Guru Baru</div>
+    <div class="msg-inline error" id="msgGuru"></div>
+    <div class="field-group"><label>NIP/NUPTK</label><input type="text" id="inputNip"></div>
+    <div class="field-group"><label>Nama Lengkap</label><input type="text" id="inputNamaGuru"></div>
+    <div class="field-group"><label>No. HP (untuk notifikasi)</label><input type="text" id="inputHpGuru" placeholder="628xxxxxxxxxx"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="tutupModal('modalGuru')">Batal</button>
+      <button class="btn-primary" id="btnSimpanGuru">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH KELAS ===== -->
+<div class="modal-overlay" id="modalKelas">
+  <div class="modal-box">
+    <div class="modal-title">Tambah Kelas Baru</div>
+    <div class="msg-inline error" id="msgKelas"></div>
+    <div class="field-group"><label>Nama Kelas</label><input type="text" id="inputNamaKelas" placeholder="Contoh: VIII-A"></div>
+    <div class="field-group"><label>Tingkat</label>
+      <select id="inputTingkat"><option value="">-- Pilih --</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select>
+    </div>
+    <div class="field-group"><label>Wali Kelas</label><select id="inputWaliKelas"><option value="">-- Pilih Guru --</option></select></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="tutupModal('modalKelas')">Batal</button>
+      <button class="btn-primary" id="btnSimpanKelas">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+
+  // ---------- Guard: wajib login sebagai operator/super_admin ----------
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+
+  if (!token || !userStr) {
+    window.location.href = "../../index.html";
+  }
+
+  const user = JSON.parse(userStr);
+  if (user.role !== "operator" && user.role !== "super_admin") {
+    alert("Akses ditolak. Halaman ini khusus Operator/Super Admin.");
+    window.location.href = "../../index.html";
+  }
+
+  document.getElementById("userName").textContent = user.nama_lengkap;
+  document.getElementById("userRole").textContent = user.role === "operator" ? "Operator" : "Super Admin";
+
+  document.getElementById("btnLogout").addEventListener("click", () => {
+    sessionStorage.clear();
+    window.location.href = "../../index.html";
+  });
+
+  // ---------- Helper panggil API ----------
+  async function callApi(action, extraParams) {
+    const body = Object.assign({ action: action, token: token }, extraParams || {});
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
+    return res.json();
+  }
+
+  // ---------- Tab switching ----------
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  function tutupModal(id) {
+    document.getElementById(id).classList.remove("show");
+  }
+  function bukaModal(id) {
+    document.getElementById(id).classList.add("show");
+  }
+
+  // ---------- RINGKASAN ----------
+  async function muatRingkasan() {
+    const hasil = await callApi("getDashboardOperator");
+    if (hasil.success) {
+      document.getElementById("sumSiswa").textContent = hasil.data.total_siswa;
+      document.getElementById("sumGuru").textContent = hasil.data.total_guru;
+      document.getElementById("sumKelas").textContent = hasil.data.total_kelas;
+      document.getElementById("sumAbsen").textContent = hasil.data.absen_hari_ini;
+    }
+  }
+
+  // ---------- SISWA ----------
+  async function muatSiswa() {
+    const hasil = await callApi("getSiswaList");
+    const tbody = document.getElementById("tabelSiswa");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada data siswa. Klik "+ Tambah Siswa" untuk mulai.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map(s => `
+      <tr>
+        <td>${s.nis}</td>
+        <td>${s.nama_lengkap}</td>
+        <td>${s.nama_kelas}</td>
+        <td><span class="badge ${s.is_active ? 'aktif' : 'nonaktif'}">${s.is_active ? 'Aktif' : 'Nonaktif'}</span></td>
+        <td><button class="link-action ${s.is_active ? 'danger' : ''}" onclick="toggleStatusSiswa('${s.siswa_id}', ${!s.is_active})">${s.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button></td>
+      </tr>
+    `).join("");
+  }
+
+  async function toggleStatusSiswa(id, statusBaru) {
+    await callApi("ubahStatusSiswa", { siswa_id: id, is_active: statusBaru });
+    muatSiswa();
+    muatRingkasan();
+  }
+
+  async function muatDropdownKelas(selectId) {
+    const hasil = await callApi("getKelasList");
+    const select = document.getElementById(selectId);
+    if (hasil.success) {
+      select.innerHTML = '<option value="">-- Pilih Kelas --</option>' +
+        hasil.data.map(k => `<option value="${k.kelas_id}">${k.nama_kelas}</option>`).join("");
+    }
+  }
+
+  document.getElementById("btnTambahSiswa").addEventListener("click", () => {
+    document.getElementById("msgSiswa").classList.remove("show");
+    ["inputNis","inputNisn","inputNamaSiswa","inputAlamatSiswa"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("inputJK").value = "";
+    muatDropdownKelas("inputKelasSiswa");
+    bukaModal("modalSiswa");
+  });
+
+  document.getElementById("btnSimpanSiswa").addEventListener("click", async () => {
+    const data = {
+      nis: document.getElementById("inputNis").value.trim(),
+      nisn: document.getElementById("inputNisn").value.trim(),
+      nama_lengkap: document.getElementById("inputNamaSiswa").value.trim(),
+      kelas_id: document.getElementById("inputKelasSiswa").value,
+      jenis_kelamin: document.getElementById("inputJK").value,
+      alamat: document.getElementById("inputAlamatSiswa").value.trim()
+    };
+    const hasil = await callApi("tambahSiswa", { data: data });
+    const msgBox = document.getElementById("msgSiswa");
+    if (hasil.success) {
+      tutupModal("modalSiswa");
+      muatSiswa();
+      muatRingkasan();
+    } else {
+      msgBox.textContent = hasil.message;
+      msgBox.classList.add("show");
+    }
+  });
+
+  // ---------- GURU ----------
+  async function muatGuru() {
+    const hasil = await callApi("getGuruList");
+    const tbody = document.getElementById("tabelGuru");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada data guru. Klik "+ Tambah Guru" untuk mulai.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map(g => `
+      <tr>
+        <td>${g.nip_nuptk}</td>
+        <td>${g.nama_lengkap}</td>
+        <td>${g.nomor_hp || '-'}</td>
+        <td><span class="badge ${g.is_active ? 'aktif' : 'nonaktif'}">${g.is_active ? 'Aktif' : 'Nonaktif'}</span></td>
+        <td><button class="link-action ${g.is_active ? 'danger' : ''}" onclick="toggleStatusGuru('${g.guru_id}', ${!g.is_active})">${g.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button></td>
+      </tr>
+    `).join("");
+  }
+
+  async function toggleStatusGuru(id, statusBaru) {
+    await callApi("ubahStatusGuru", { guru_id: id, is_active: statusBaru });
+    muatGuru();
+    muatRingkasan();
+  }
+
+  document.getElementById("btnTambahGuru").addEventListener("click", () => {
+    document.getElementById("msgGuru").classList.remove("show");
+    ["inputNip","inputNamaGuru","inputHpGuru"].forEach(id => document.getElementById(id).value = "");
+    bukaModal("modalGuru");
+  });
+
+  document.getElementById("btnSimpanGuru").addEventListener("click", async () => {
+    const data = {
+      nip_nuptk: document.getElementById("inputNip").value.trim(),
+      nama_lengkap: document.getElementById("inputNamaGuru").value.trim(),
+      nomor_hp: document.getElementById("inputHpGuru").value.trim()
+    };
+    const hasil = await callApi("tambahGuru", { data: data });
+    const msgBox = document.getElementById("msgGuru");
+    if (hasil.success) {
+      tutupModal("modalGuru");
+      muatGuru();
+      muatRingkasan();
+    } else {
+      msgBox.textContent = hasil.message;
+      msgBox.classList.add("show");
+    }
+  });
+
+  // ---------- KELAS ----------
+  async function muatKelas() {
+    const hasil = await callApi("getKelasList");
+    const tbody = document.getElementById("tabelKelas");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada data kelas. Klik "+ Tambah Kelas" untuk mulai.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map(k => `
+      <tr>
+        <td>${k.nama_kelas}</td>
+        <td>${k.tingkat}</td>
+        <td>${k.nama_wali_kelas}</td>
+        <td>${k.tahun_ajaran}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function muatDropdownGuru() {
+    const hasil = await callApi("getGuruList");
+    const select = document.getElementById("inputWaliKelas");
+    if (hasil.success) {
+      select.innerHTML = '<option value="">-- Pilih Guru --</option>' +
+        hasil.data.filter(g => g.is_active).map(g => `<option value="${g.guru_id}">${g.nama_lengkap}</option>`).join("");
+    }
+  }
+
+  document.getElementById("btnTambahKelas").addEventListener("click", () => {
+    document.getElementById("msgKelas").classList.remove("show");
+    document.getElementById("inputNamaKelas").value = "";
+    document.getElementById("inputTingkat").value = "";
+    muatDropdownGuru();
+    bukaModal("modalKelas");
+  });
+
+  document.getElementById("btnSimpanKelas").addEventListener("click", async () => {
+    const data = {
+      nama_kelas: document.getElementById("inputNamaKelas").value.trim(),
+      tingkat: document.getElementById("inputTingkat").value,
+      wali_kelas_id: document.getElementById("inputWaliKelas").value
+    };
+    const hasil = await callApi("tambahKelas", { data: data });
+    const msgBox = document.getElementById("msgKelas");
+    if (hasil.success) {
+      tutupModal("modalKelas");
+      muatKelas();
+      muatRingkasan();
+    } else {
+      msgBox.textContent = hasil.message;
+      msgBox.classList.add("show");
+    }
+  });
+
+  // ---------- Inisialisasi ----------
+  muatRingkasan();
+  muatSiswa();
+  muatGuru();
+  muatKelas();
+</script>
+
+</body>
+</html>
 
