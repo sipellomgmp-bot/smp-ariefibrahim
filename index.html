@@ -639,11 +639,21 @@
         successBox.classList.add("show");
 
         // ============================================================
-        // Arahkan ke dashboard sesuai role — halaman-halaman ini akan
-        // kita buat di tahap berikutnya. Untuk sekarang redirect
-        // dikomentari dulu supaya tidak error 404 (halaman belum ada).
+        // Redirect ke dashboard sesuai role. Halaman yang belum dibangun
+        // akan menampilkan pesan "belum tersedia" dulu.
         // ============================================================
-        // window.location.href = `pages/dashboard-${selectedRole.replace('_','-')}/index.html`;
+        const halamanTersedia = {
+          "operator": "pages/dashboard-operator/index.html",
+          "super_admin": "pages/dashboard-operator/index.html"
+        };
+
+        setTimeout(() => {
+          if (halamanTersedia[selectedRole]) {
+            window.location.href = halamanTersedia[selectedRole];
+          } else {
+            tampilkanError("Dashboard untuk role ini sedang dibangun, belum tersedia.");
+          }
+        }, 700);
 
       } else {
         tampilkanError(hasil.message || "Login gagal, periksa kembali data Anda.");
