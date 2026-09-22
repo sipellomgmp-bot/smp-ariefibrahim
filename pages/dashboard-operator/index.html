@@ -42,6 +42,45 @@
   .sidebar-brand .title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 14px; line-height: 1.2; }
   .sidebar-brand .subtitle { font-size: 9.5px; color: #97a1ba; letter-spacing: 0.5px; }
 
+  .sidebar-profile { padding: 16px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-profile .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--navy-light); border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; color: var(--gold-light); font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .sidebar-profile .pname { font-size: 13px; font-weight: 700; color: #fff; }
+  .sidebar-profile .prole { font-size: 10.5px; color: #97a1ba; }
+  .sidebar-profile .ponline { display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #6fcf7f; margin-top: 2px; }
+  .sidebar-profile .dot { width: 6px; height: 6px; border-radius: 50%; background: #6fcf7f; }
+
+  .hamburger-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; }
+  .hamburger-btn svg { width: 20px; height: 20px; stroke: var(--ink); }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+  .sidebar-overlay.show { display: block; }
+
+  .notif-btn { position: relative; background: var(--cream); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .notif-btn svg { width: 16px; height: 16px; stroke: var(--ink-soft); }
+  .notif-badge { position: absolute; top: -2px; right: -2px; background: var(--red); color: #fff; font-size: 9px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+  .banner-quick-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .qa-banner-btn {
+    background: rgba(255,255,255,0.95); border: none; border-radius: 10px; padding: 10px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--navy-dark); min-width: 76px;
+  }
+  .qa-banner-btn svg { width: 16px; height: 16px; stroke: var(--navy-dark); }
+  .qa-banner-btn:hover { background: #fff; }
+
+  .placeholder-box {
+    background: #fafaf7; border: 1.5px dashed var(--border-soft); border-radius: 12px;
+    padding: 30px 20px; text-align: center; color: var(--ink-soft); font-size: 12.5px;
+  }
+  .placeholder-box svg { width: 30px; height: 30px; stroke: var(--gold); margin-bottom: 10px; }
+  .placeholder-box strong { display: block; color: var(--navy-dark); font-size: 13.5px; margin-bottom: 4px; }
+
+  .dev-quote-card {
+    background: linear-gradient(135deg, var(--navy-darkest), var(--navy-dark)); border-radius: 14px;
+    padding: 24px 22px; color: #fff; position: relative; overflow: hidden;
+  }
+  .dev-quote-card .qtext { font-family: 'Playfair Display', serif; font-style: italic; font-size: 13.5px; line-height: 1.6; color: #dfe4f0; }
+  .dev-quote-card .qname { margin-top: 14px; font-size: 13px; font-weight: 700; color: var(--gold-light); }
+  .dev-quote-card .qrole { font-size: 10.5px; color: #97a1ba; }
+
   .nav-scroll { flex: 1; padding: 10px 12px; }
   .nav-group-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #6f7996; padding: 14px 10px 6px; }
   .nav-item {
@@ -132,6 +171,7 @@
 
   /* ---- Two column: activity log + quick actions ---- */
   .grid-2col { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+  .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; align-items: start; margin-bottom: 22px; }
 
   .panel-box { background: #fff; border: 1px solid var(--border-soft); border-radius: 14px; padding: 18px 20px; }
   .panel-box-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--navy-dark); margin-bottom: 14px; }
@@ -199,9 +239,19 @@
   @media (max-width: 1000px) {
     .sidebar { position: fixed; left: -260px; z-index: 100; transition: left 0.2s ease; }
     .sidebar.open { left: 0; }
+    .hamburger-btn { display: flex; }
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
     .grid-2col { grid-template-columns: 1fr; }
+    .grid-3col { grid-template-columns: 1fr; }
     .search-box { display: none; }
+    .welcome-banner { flex-direction: column; align-items: flex-start; }
+    .banner-quick-actions { flex-wrap: wrap; width: 100%; }
+  }
+  @media (max-width: 600px) {
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .content { padding: 14px; }
+    table, th, td { font-size: 11.5px; }
+    th, td { padding: 8px 10px; }
   }
 </style>
 </head>
@@ -219,35 +269,48 @@
       </div>
     </div>
 
+    <div class="sidebar-profile">
+      <div class="avatar" id="sidebarAvatar">-</div>
+      <div>
+        <div class="pname" id="sidebarName">-</div>
+        <div class="prole" id="sidebarRole">-</div>
+        <div class="ponline"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
     <div class="nav-scroll">
       <button class="nav-item active" data-tab="dashboard">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
         Dashboard
       </button>
 
-      <div class="nav-group-label" id="groupPengguna">MANAJEMEN PENGGUNA</div>
-      <button class="nav-item" data-tab="segerahadir" id="menuPengguna"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0116 0v2"/></svg>Pengguna</button>
-
-      <div class="nav-group-label">DATA SEKOLAH</div>
-      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1m-6 4h1m4 0h1m-6 4h1m4 0h1"/></svg>Sekolah</button>
-      <button class="nav-item" data-tab="kelas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Kelas</button>
-      <button class="nav-item" data-tab="siswa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Siswa</button>
+      <div class="nav-group-label">MASTER DATA</div>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14"/></svg>Sekolah</button>
+      <button class="nav-item" data-tab="siswa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Siswa</button>
       <button class="nav-item" data-tab="guru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Guru</button>
+      <button class="nav-item" data-tab="kelas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Kelas</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg>Wali Kelas</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>Mata Pelajaran</button>
-      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Program Unggulan</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Ekstrakurikuler</button>
+      <button class="nav-item" data-tab="programunggulan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Program Unggulan</button>
 
-      <div class="nav-group-label">ABSENSI &amp; KEGIATAN</div>
+      <div class="nav-group-label">ABSENSI</div>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Absensi Siswa</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Absensi Guru</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Absensi Wali Murid</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Acara Sekolah</button>
 
-      <div class="nav-group-label">KOMUNIKASI &amp; LAPORAN</div>
-      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>WhatsApp Center</button>
-      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Laporan</button>
+      <div class="nav-group-label">QR CODE</div>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Siswa</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Guru</button>
+
+      <div class="nav-group-label">LAPORAN</div>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Laporan Harian</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Laporan Bulanan</button>
 
       <div class="nav-group-label" id="groupSistem">SISTEM</div>
       <button class="nav-item" data-tab="activitylog" id="menuActivityLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Activity Log</button>
-      <button class="nav-item" data-tab="segerahadir" id="menuPengaturan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Pengaturan</button>
+      <button class="nav-item" data-tab="segerahadir" id="menuPengaturan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82"/></svg>Pengaturan</button>
     </div>
 
     <div class="sidebar-footer">
@@ -258,16 +321,24 @@
       </div>
     </div>
   </div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <!-- ===================== MAIN ===================== -->
   <div class="main">
 
     <div class="topbar">
+      <button class="hamburger-btn" id="btnHamburger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
       <div class="search-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input type="text" placeholder="Cari menu, siswa, guru, atau fitur...">
+        <input type="text" placeholder="Cari siswa, guru, kelas, atau fitur...">
       </div>
       <div class="topbar-right">
+        <button class="notif-btn" onclick="alert('Notifikasi terhubung ke WhatsApp Center, fitur ini akan aktif di rilis berikutnya.')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge">0</span>
+        </button>
         <div class="topbar-date">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           <span id="topbarDate">-</span>
@@ -293,7 +364,13 @@
             <div class="greet">Selamat Datang,</div>
             <div class="wname" id="welcomeName">-</div>
             <div class="wrole" id="welcomeRole">-</div>
-            <div class="wquote">"Sistem yang baik bukan hanya mencatat kehadiran, tetapi juga membangun disiplin dan masa depan."</div>
+            <div class="wquote">"Disiplin hari ini, prestasi masa depan."</div>
+          </div>
+          <div class="banner-quick-actions">
+            <button class="qa-banner-btn" onclick="pindahTab('siswa'); document.getElementById('btnTambahSiswa').click();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>Tambah Siswa</button>
+            <button class="qa-banner-btn" onclick="pindahTab('guru'); document.getElementById('btnTambahGuru').click();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Tambah Guru</button>
+            <button class="qa-banner-btn" onclick="alert('Scan QR akan aktif setelah fitur Absensi QR selesai dibangun (roadmap Langkah 3-4).')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Scan QR</button>
+            <button class="qa-banner-btn" onclick="alert('Buat Acara akan aktif di roadmap Langkah 10.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Buat Acara</button>
           </div>
         </div>
 
@@ -301,29 +378,72 @@
           <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="stat-label">Total Siswa</div><div class="stat-value" id="sumSiswa">-</div></div></div>
           <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div><div class="stat-label">Total Guru</div><div class="stat-value" id="sumGuru">-</div></div></div>
           <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="stat-label">Total Kelas</div><div class="stat-value" id="sumKelas">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><div><div class="stat-label">Absen Hari Ini</div><div class="stat-value" id="sumAbsen">-</div></div></div>
-        </div>
-
-        <div class="info-note">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          <div>Statistik kehadiran (grafik, persentase, dsb) akan otomatis terisi begitu fitur <strong>Absensi QR</strong> aktif dan siswa mulai melakukan scan. Saat ini menu Absensi Siswa/Guru masih dalam tahap pembangunan sesuai roadmap.</div>
+          <div class="stat-card"><div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div><div class="stat-label">Ekstrakurikuler</div><div class="stat-value" id="sumEkskul">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg></div><div><div class="stat-label">Program Unggulan</div><div class="stat-value" id="sumProgram">-</div></div></div>
         </div>
 
         <div class="grid-2col">
           <div class="panel-box">
-            <div class="panel-box-title">Log Aktivitas Terbaru</div>
-            <div id="logAktivitasList"><div class="empty-state">Memuat...</div></div>
+            <div class="panel-box-title">Grafik Kehadiran Siswa</div>
+            <div class="placeholder-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18M7 16l4-6 4 3 5-8"/></svg>
+              <strong>Grafik belum tersedia</strong>
+              Akan otomatis terisi setelah fitur Absensi QR (roadmap Langkah 3-4) aktif dan siswa mulai melakukan scan harian.
+            </div>
           </div>
           <div class="panel-box">
-            <div class="panel-box-title">Aksi Cepat</div>
-            <div class="quick-grid">
-              <button class="quick-btn" onclick="pindahTab('siswa')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>Tambah Siswa</button>
-              <button class="quick-btn" onclick="pindahTab('guru')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Tambah Guru</button>
-              <button class="quick-btn" onclick="pindahTab('kelas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg>Tambah Kelas</button>
-              <button class="quick-btn" onclick="alert('Fitur ini sedang dibangun, akan tersedia di rilis berikutnya.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Kirim WhatsApp</button>
+            <div class="panel-box-title">Notifikasi &amp; Pesan</div>
+            <div class="placeholder-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <strong>Belum ada notifikasi</strong>
+              Akan terisi setelah WhatsApp Notification Center (roadmap Langkah 6) aktif.
             </div>
           </div>
         </div>
+
+        <div class="grid-3col">
+          <div class="panel-box">
+            <div class="panel-box-title">Rekap Absensi per Kelas</div>
+            <div class="placeholder-box"><strong>Segera Hadir</strong>Menunggu data absensi harian.</div>
+          </div>
+          <div class="panel-box">
+            <div class="panel-box-title">Top 5 Siswa Paling Rajin</div>
+            <div class="placeholder-box"><strong>Segera Hadir</strong>Menunggu data absensi harian.</div>
+          </div>
+          <div class="panel-box">
+            <div class="panel-box-title">Guru Paling Rajin</div>
+            <div class="placeholder-box"><strong>Segera Hadir</strong>Menunggu data absensi harian.</div>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="panel-box">
+            <div class="panel-box-title">Aktivitas Terbaru</div>
+            <div id="logAktivitasList"><div class="empty-state">Memuat...</div></div>
+          </div>
+          <div>
+            <div class="panel-box" style="margin-bottom:16px;">
+              <div class="panel-box-title">Aksi Cepat</div>
+              <div class="quick-grid">
+                <button class="quick-btn" onclick="pindahTab('siswa')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>Tambah Siswa</button>
+                <button class="quick-btn" onclick="pindahTab('guru')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Tambah Guru</button>
+                <button class="quick-btn" onclick="pindahTab('kelas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg>Tambah Kelas</button>
+                <button class="quick-btn" onclick="pindahTab('programunggulan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Program Unggulan</button>
+              </div>
+            </div>
+            <div class="dev-quote-card">
+              <div class="qtext">"Pendidikan bukan hanya tentang ilmu, tetapi juga tentang pembentukan karakter."</div>
+              <div class="qname">Edoy D'Hagane</div>
+              <div class="qrole">Developer &amp; Creator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PROGRAM UNGGULAN (halaman penuh) ===== -->
+      <div class="tab-panel" id="panel-programunggulan">
+        <div class="panel-header"><div class="panel-title">Program Unggulan</div></div>
+        <div id="listProgramUnggulan"><div class="empty-state">Memuat...</div></div>
       </div>
 
       <!-- ===== SISWA ===== -->
@@ -427,18 +547,31 @@
   const inisial = user.nama_lengkap.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase();
   document.getElementById("avatarInisial").textContent = inisial;
   document.getElementById("welcomeInisial").textContent = inisial;
+  document.getElementById("sidebarAvatar").textContent = inisial;
   document.getElementById("topUserName").textContent = user.nama_lengkap;
   document.getElementById("welcomeName").textContent = user.nama_lengkap;
+  document.getElementById("sidebarName").textContent = user.nama_lengkap;
   const labelRole = { operator: "Operator", super_admin: "Super Admin" }[user.role];
   document.getElementById("topUserRole").textContent = labelRole;
   document.getElementById("welcomeRole").textContent = labelRole + " • SMP ARIEFIBRAHIM";
+  document.getElementById("sidebarRole").textContent = labelRole;
 
   if (user.role !== "super_admin") {
-    document.getElementById("groupPengguna").style.display = "none";
-    document.getElementById("menuPengguna").style.display = "none";
     document.getElementById("menuActivityLog").style.display = "none";
     document.getElementById("menuPengaturan").style.display = "none";
   }
+
+  // ---------- Hamburger mobile ----------
+  const sidebarEl = document.getElementById("sidebar");
+  const overlayEl = document.getElementById("sidebarOverlay");
+  document.getElementById("btnHamburger").addEventListener("click", () => {
+    sidebarEl.classList.add("open");
+    overlayEl.classList.add("show");
+  });
+  overlayEl.addEventListener("click", () => {
+    sidebarEl.classList.remove("open");
+    overlayEl.classList.remove("show");
+  });
 
   document.getElementById("btnLogout").addEventListener("click", () => {
     sessionStorage.clear();
@@ -468,6 +601,8 @@
     const navBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
     if (navBtn) navBtn.classList.add("active");
     document.getElementById("panel-" + tabId).classList.add("active");
+    sidebarEl.classList.remove("open");
+    overlayEl.classList.remove("show");
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => pindahTab(btn.dataset.tab));
@@ -482,8 +617,23 @@
       document.getElementById("sumSiswa").textContent = hasil.data.total_siswa;
       document.getElementById("sumGuru").textContent = hasil.data.total_guru;
       document.getElementById("sumKelas").textContent = hasil.data.total_kelas;
-      document.getElementById("sumAbsen").textContent = hasil.data.absen_hari_ini;
+      document.getElementById("sumEkskul").textContent = hasil.data.total_ekstrakurikuler;
+      document.getElementById("sumProgram").textContent = hasil.data.total_program;
     }
+  }
+
+  async function muatProgramUnggulan() {
+    const hasil = await callApi("getProgramUnggulanList");
+    const container = document.getElementById("listProgramUnggulan");
+    if (!hasil.success || hasil.data.length === 0) {
+      container.innerHTML = '<div class="empty-state">Belum ada Program Unggulan yang didaftarkan. Fitur tambah program akan aktif di roadmap Langkah 7.</div>';
+      return;
+    }
+    container.innerHTML = hasil.data.map(p => `
+      <div class="panel-box" style="margin-bottom:12px;">
+        <div class="panel-box-title" style="margin-bottom:4px;">${p.nama_program}</div>
+        <div style="font-size:12.5px; color:var(--ink-soft);">${p.deskripsi || 'Tidak ada deskripsi'}</div>
+      </div>`).join("");
   }
 
   async function muatLogAktivitas() {
@@ -723,6 +873,7 @@
   muatGuru();
   muatKelas();
   muatActivityLogPenuh();
+  muatProgramUnggulan();
 </script>
 
 </body>
