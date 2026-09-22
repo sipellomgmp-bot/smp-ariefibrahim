@@ -285,6 +285,7 @@
       </button>
 
       <div class="nav-group-label">MASTER DATA</div>
+      <button class="nav-item" data-tab="pengguna"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0116 0v2"/></svg>Pengguna</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14"/></svg>Sekolah</button>
       <button class="nav-item" data-tab="siswa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Siswa</button>
       <button class="nav-item" data-tab="guru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Guru</button>
@@ -440,6 +441,13 @@
         </div>
       </div>
 
+      <!-- ===== PENGGUNA ===== -->
+      <div class="tab-panel" id="panel-pengguna">
+        <div class="panel-header"><div class="panel-title">Data Pengguna</div><button class="btn-primary" id="btnTambahPengguna">+ Tambah Pengguna</button></div>
+        <table><thead><tr><th>Username</th><th>Nama Lengkap</th><th>Role</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody id="tabelPengguna"><tr><td colspan="5" class="empty-state">Memuat data...</td></tr></tbody></table>
+      </div>
+
       <!-- ===== PROGRAM UNGGULAN (halaman penuh) ===== -->
       <div class="tab-panel" id="panel-programunggulan">
         <div class="panel-header"><div class="panel-title">Program Unggulan</div></div>
@@ -486,6 +494,26 @@
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH PENGGUNA ===== -->
+<div class="modal-overlay" id="modalPengguna">
+  <div class="modal-box">
+    <div class="modal-title">Tambah Akun Pengguna</div>
+    <div class="msg-inline error" id="msgPengguna"></div>
+    <div class="field-group"><label>Role</label>
+      <select id="inputRolePengguna">
+        <option value="guru">Guru</option>
+        <option value="wali_kelas">Wali Kelas</option>
+        <option value="kepala_sekolah">Kepala Sekolah</option>
+      </select>
+    </div>
+    <div class="field-group" id="groupRefGuru"><label>Pilih Data Guru</label><select id="inputRefGuru"><option value="">-- Pilih Guru --</option></select></div>
+    <div class="field-group"><label>Nama Lengkap</label><input type="text" id="inputNamaPengguna"></div>
+    <div class="field-group"><label>Username</label><input type="text" id="inputUsernamePengguna"></div>
+    <div class="field-group"><label>Password Awal</label><input type="text" id="inputPasswordPengguna" placeholder="Minimal 8 karakter"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="tutupModal('modalPengguna')">Batal</button><button class="btn-primary" id="btnSimpanPengguna">Simpan</button></div>
   </div>
 </div>
 
@@ -874,6 +902,69 @@
   muatKelas();
   muatActivityLogPenuh();
   muatProgramUnggulan();
+  muatPengguna();
+
+  // ---------- PENGGUNA ----------
+  if (user.role === "super_admin") {
+    document.getElementById("inputRolePengguna").innerHTML += '<option value="operator">Operator</option><option value="super_admin">Super Admin</option>';
+  }
+
+  async function muatPengguna() {
+    const hasil = await callApi("getPenggunaList");
+    const tbody = document.getElementById("tabelPengguna");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada pengguna.</td></tr>';
+      return;
+    }
+    const labelRoleMap = { super_admin: "Super Admin", operator: "Operator", guru: "Guru", wali_kelas: "Wali Kelas", kepala_sekolah: "Kepala Sekolah" };
+    tbody.innerHTML = hasil.data.map(u => `
+      <tr>
+        <td>${u.username}</td><td>${u.nama_lengkap}</td><td>${labelRoleMap[u.role] || u.role}</td>
+        <td><span class="badge ${u.is_active ? 'aktif' : 'nonaktif'}">${u.is_active ? 'Aktif' : 'Nonaktif'}</span></td>
+        <td class="action-group"><button class="link-action ${u.is_active ? 'danger' : ''}" onclick="toggleStatusPengguna('${u.user_id}', ${!u.is_active})">${u.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button></td>
+      </tr>`).join("");
+  }
+
+  async function toggleStatusPengguna(id, statusBaru) {
+    const hasil = await callApi("ubahStatusPengguna", { user_id: id, is_active: statusBaru });
+    if (!hasil.success) alert(hasil.message);
+    muatPengguna();
+  }
+
+  document.getElementById("inputRolePengguna").addEventListener("change", toggleGroupRefGuru);
+  function toggleGroupRefGuru() {
+    const role = document.getElementById("inputRolePengguna").value;
+    document.getElementById("groupRefGuru").style.display = (role === "guru" || role === "wali_kelas") ? "block" : "none";
+  }
+
+  document.getElementById("btnTambahPengguna").addEventListener("click", async () => {
+    document.getElementById("msgPengguna").classList.remove("show");
+    document.getElementById("inputRolePengguna").value = "guru";
+    ["inputNamaPengguna","inputUsernamePengguna","inputPasswordPengguna"].forEach(id => document.getElementById(id).value = "");
+    toggleGroupRefGuru();
+    const hasilGuru = await callApi("getGuruList");
+    const select = document.getElementById("inputRefGuru");
+    if (hasilGuru.success) {
+      select.innerHTML = '<option value="">-- Pilih Guru --</option>' +
+        hasilGuru.data.filter(g => g.is_active).map(g => `<option value="${g.guru_id}">${g.nama_lengkap}</option>`).join("");
+    }
+    bukaModal("modalPengguna");
+  });
+
+  document.getElementById("btnSimpanPengguna").addEventListener("click", async () => {
+    const role = document.getElementById("inputRolePengguna").value;
+    const data = {
+      role: role,
+      ref_id: (role === "guru" || role === "wali_kelas") ? document.getElementById("inputRefGuru").value : "",
+      nama_lengkap: document.getElementById("inputNamaPengguna").value.trim(),
+      username: document.getElementById("inputUsernamePengguna").value.trim(),
+      password: document.getElementById("inputPasswordPengguna").value
+    };
+    const hasil = await callApi("tambahPengguna", { data: data });
+    const msgBox = document.getElementById("msgPengguna");
+    if (hasil.success) { tutupModal("modalPengguna"); muatPengguna(); }
+    else { msgBox.textContent = hasil.message; msgBox.classList.add("show"); }
+  });
 </script>
 
 </body>
