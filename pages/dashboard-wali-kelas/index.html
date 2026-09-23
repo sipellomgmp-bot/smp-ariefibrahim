@@ -187,7 +187,7 @@
       <div class="topbar-right">
         <button class="notif-btn" onclick="alert('Notifikasi akan aktif setelah WhatsApp Center dibangun.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg><span class="notif-badge">0</span></button>
         <div class="topbar-date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span id="topbarDate">-</span></div>
-        <div class="topbar-user"><div class="avatar" id="avatarInisial">-</div><div><div class="uname" id="topUserName">-</div><div class="urole" id="topUserRole">-</div></div></div>
+        <div class="topbar-user"><div class="avatar" id="avatarInisial" style="cursor:pointer;" onclick="document.getElementById('inputFotoProfil').click();" title="Klik untuk ganti foto profil">-</div><input type="file" id="inputFotoProfil" accept="image/*" style="display:none;"><div><div class="uname" id="topUserName">-</div><div class="urole" id="topUserRole">-</div></div></div>
         <button class="btn-logout-small" id="btnLogout">Keluar</button>
       </div>
     </div>
@@ -270,6 +270,37 @@
     const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
     return res.json();
   }
+
+  function resizeDanBaca(file, maxWidth, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, maxWidth / img.width);
+        canvas.width = img.width * scale; canvas.height = img.height * scale;
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        callback(dataUrl.split(",")[1], "image/jpeg", dataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById("inputFotoProfil").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    resizeDanBaca(file, 300, async (base64, mimeType) => {
+      const hasil = await callApi("uploadFotoProfil", { base64Data: base64, mimeType: mimeType });
+      if (hasil.success) {
+        ["avatarInisial","welcomeInisial","sidebarAvatar"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = `<img src="${hasil.data.foto_url}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">`;
+        });
+      } else { alert(hasil.message); }
+    });
+  });
 
   function pindahTab(tabId) {
     document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
