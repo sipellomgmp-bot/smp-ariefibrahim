@@ -345,7 +345,8 @@
           <span id="topbarDate">-</span>
         </div>
         <div class="topbar-user">
-          <div class="avatar" id="avatarInisial">-</div>
+          <div class="avatar" id="avatarInisial" style="cursor:pointer;" onclick="document.getElementById('inputFotoProfil').click();" title="Klik untuk ganti foto profil">-</div>
+          <input type="file" id="inputFotoProfil" accept="image/*" style="display:none;">
           <div>
             <div class="uname" id="topUserName">-</div>
             <div class="urole" id="topUserRole">-</div>
@@ -523,6 +524,17 @@
     <div class="modal-title" id="judulModalSiswa">Tambah Siswa Baru</div>
     <div class="msg-inline error" id="msgSiswa"></div>
     <input type="hidden" id="editSiswaId">
+    <div class="field-group" id="groupFotoSiswa" style="display:none;">
+      <label>Foto 4x6</label>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img id="previewFotoSiswa" src="" style="width:60px;height:80px;object-fit:cover;border-radius:6px;background:var(--cream);border:1px solid var(--border-soft);">
+        <div>
+          <input type="file" id="inputFotoSiswaFile" accept="image/*" style="font-size:11.5px;">
+          <div style="font-size:10.5px; color:var(--ink-soft); margin-top:4px;">Foto langsung tersimpan begitu dipilih.</div>
+        </div>
+      </div>
+    </div>
+    <div class="field-group" id="hintFotoTambah" style="font-size:11.5px; color:var(--ink-soft);">Simpan data dulu, lalu klik Edit untuk menambahkan foto.</div>
     <div class="field-group"><label>NIS</label><input type="text" id="inputNis"></div>
     <div class="field-group"><label>NISN</label><input type="text" id="inputNisn"></div>
     <div class="field-group"><label>Nama Lengkap</label><input type="text" id="inputNamaSiswa"></div>
@@ -539,6 +551,17 @@
     <div class="modal-title" id="judulModalGuru">Tambah Guru Baru</div>
     <div class="msg-inline error" id="msgGuru"></div>
     <input type="hidden" id="editGuruId">
+    <div class="field-group" id="groupFotoGuru" style="display:none;">
+      <label>Foto</label>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img id="previewFotoGuru" src="" style="width:60px;height:80px;object-fit:cover;border-radius:6px;background:var(--cream);border:1px solid var(--border-soft);">
+        <div>
+          <input type="file" id="inputFotoGuruFile" accept="image/*" style="font-size:11.5px;">
+          <div style="font-size:10.5px; color:var(--ink-soft); margin-top:4px;">Foto langsung tersimpan begitu dipilih.</div>
+        </div>
+      </div>
+    </div>
+    <div class="field-group" id="hintFotoTambahGuru" style="font-size:11.5px; color:var(--ink-soft);">Simpan data dulu, lalu klik Edit untuk menambahkan foto.</div>
     <div class="field-group"><label>NIP/NUPTK</label><input type="text" id="inputNip"></div>
     <div class="field-group"><label>Nama Lengkap</label><input type="text" id="inputNamaGuru"></div>
     <div class="field-group"><label>No. HP (untuk notifikasi)</label><input type="text" id="inputHpGuru" placeholder="628xxxxxxxxxx"></div>
@@ -639,6 +662,47 @@
   function tutupModal(id) { document.getElementById(id).classList.remove("show"); }
   function bukaModal(id) { document.getElementById(id).classList.add("show"); }
 
+  // ---------- Helper: resize gambar di browser sebelum dikirim (hemat kuota) ----------
+  function resizeDanBaca(file, maxWidth, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, maxWidth / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        callback(dataUrl.split(",")[1], "image/jpeg", dataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function tampilkanFotoDiAvatar(url) {
+    ["avatarInisial", "welcomeInisial", "sidebarAvatar"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = `<img src="${url}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">`;
+    });
+  }
+
+  // ---------- Upload foto profil sendiri (klik avatar) ----------
+  document.getElementById("inputFotoProfil").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    resizeDanBaca(file, 300, async (base64, mimeType) => {
+      const hasil = await callApi("uploadFotoProfil", { base64Data: base64, mimeType: mimeType });
+      if (hasil.success) {
+        tampilkanFotoDiAvatar(hasil.data.foto_url);
+      } else {
+        alert(hasil.message);
+      }
+    });
+  });
+
   async function muatRingkasan() {
     const hasil = await callApi("getDashboardOperator");
     if (hasil.success) {
@@ -720,6 +784,8 @@
     document.getElementById("judulModalSiswa").textContent = "Tambah Siswa Baru";
     document.getElementById("editSiswaId").value = "";
     document.getElementById("msgSiswa").classList.remove("show");
+    document.getElementById("groupFotoSiswa").style.display = "none";
+    document.getElementById("hintFotoTambah").style.display = "block";
     ["inputNis","inputNisn","inputNamaSiswa","inputAlamatSiswa"].forEach(id => document.getElementById(id).value = "");
     document.getElementById("inputJK").value = "";
     muatDropdownKelas("inputKelasSiswa");
@@ -732,6 +798,9 @@
     document.getElementById("judulModalSiswa").textContent = "Edit Data Siswa";
     document.getElementById("editSiswaId").value = id;
     document.getElementById("msgSiswa").classList.remove("show");
+    document.getElementById("groupFotoSiswa").style.display = "block";
+    document.getElementById("hintFotoTambah").style.display = "none";
+    document.getElementById("previewFotoSiswa").src = s.foto_url || "";
     document.getElementById("inputNis").value = s.nis;
     document.getElementById("inputNisn").value = s.nisn;
     document.getElementById("inputNamaSiswa").value = s.nama_lengkap;
@@ -740,6 +809,18 @@
     muatDropdownKelas("inputKelasSiswa", s.kelas_id);
     bukaModal("modalSiswa");
   }
+
+  document.getElementById("inputFotoSiswaFile").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    const siswaId = document.getElementById("editSiswaId").value;
+    if (!file || !siswaId) return;
+    resizeDanBaca(file, 400, async (base64, mimeType, dataUrl) => {
+      document.getElementById("previewFotoSiswa").src = dataUrl;
+      const hasil = await callApi("uploadFotoSiswa", { siswa_id: siswaId, base64Data: base64, mimeType: mimeType });
+      if (!hasil.success) { alert(hasil.message); return; }
+      muatSiswa();
+    });
+  });
 
   document.getElementById("btnSimpanSiswa").addEventListener("click", async () => {
     const data = {
@@ -788,6 +869,8 @@
     document.getElementById("judulModalGuru").textContent = "Tambah Guru Baru";
     document.getElementById("editGuruId").value = "";
     document.getElementById("msgGuru").classList.remove("show");
+    document.getElementById("groupFotoGuru").style.display = "none";
+    document.getElementById("hintFotoTambahGuru").style.display = "block";
     ["inputNip","inputNamaGuru","inputHpGuru"].forEach(id => document.getElementById(id).value = "");
     bukaModal("modalGuru");
   });
@@ -798,11 +881,26 @@
     document.getElementById("judulModalGuru").textContent = "Edit Data Guru";
     document.getElementById("editGuruId").value = id;
     document.getElementById("msgGuru").classList.remove("show");
+    document.getElementById("groupFotoGuru").style.display = "block";
+    document.getElementById("hintFotoTambahGuru").style.display = "none";
+    document.getElementById("previewFotoGuru").src = g.foto_url || "";
     document.getElementById("inputNip").value = g.nip_nuptk;
     document.getElementById("inputNamaGuru").value = g.nama_lengkap;
     document.getElementById("inputHpGuru").value = g.nomor_hp;
     bukaModal("modalGuru");
   }
+
+  document.getElementById("inputFotoGuruFile").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    const guruId = document.getElementById("editGuruId").value;
+    if (!file || !guruId) return;
+    resizeDanBaca(file, 400, async (base64, mimeType, dataUrl) => {
+      document.getElementById("previewFotoGuru").src = dataUrl;
+      const hasil = await callApi("uploadFotoGuru", { guru_id: guruId, base64Data: base64, mimeType: mimeType });
+      if (!hasil.success) { alert(hasil.message); return; }
+      muatGuru();
+    });
+  });
 
   document.getElementById("btnSimpanGuru").addEventListener("click", async () => {
     const data = {
