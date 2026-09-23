@@ -6,6 +6,8 @@
 <title>Dashboard — SMP ARIEFIBRAHIM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root {
     --navy-darkest: #0c1a33;
@@ -235,6 +237,7 @@
   .msg-inline { padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 14px; display: none; }
   .msg-inline.show { display: block; }
   .msg-inline.error { background: var(--red-bg); color: var(--red); }
+  .msg-inline.success { background: var(--green-bg); color: var(--green); }
 
   @media (max-width: 1000px) {
     .sidebar { position: fixed; left: -260px; z-index: 100; transition: left 0.2s ease; }
@@ -286,6 +289,7 @@
 
       <div class="nav-group-label">MASTER DATA</div>
       <button class="nav-item" data-tab="pengguna"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0116 0v2"/></svg>Pengguna</button>
+      <button class="nav-item" data-tab="lokasi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-12a7 7 0 1114 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Lokasi Absensi</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14"/></svg>Sekolah</button>
       <button class="nav-item" data-tab="siswa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Siswa</button>
       <button class="nav-item" data-tab="guru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Guru</button>
@@ -439,6 +443,32 @@
               <div class="qrole">Developer &amp; Creator</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- ===== LOKASI ABSENSI (peta OpenStreetMap) ===== -->
+      <div class="tab-panel" id="panel-lokasi">
+        <div class="panel-header"><div class="panel-title">Lokasi Absensi</div></div>
+
+        <div class="panel-box" style="margin-bottom:16px;">
+          <p style="font-size:13px; color:var(--ink-soft); margin-bottom:14px;">
+            Klik peta atau tombol di bawah untuk menandai titik gerbang sekolah. Absensi QR siswa/guru
+            hanya berhasil jika di-scan dalam radius yang ditentukan dari titik ini.
+          </p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+            <button class="btn-primary" id="btnLokasiHpSaya"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6-7-12a7 7 0 1114 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Gunakan Lokasi HP Saya Sekarang</button>
+          </div>
+          <div id="petaLokasi" style="width:100%; height:360px; border-radius:12px; border:1px solid var(--border-soft);"></div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px;">
+            <div class="field-group" style="margin-bottom:0;"><label>Nama Titik</label><input type="text" id="inputNamaLokasi" value="Gerbang Utama"></div>
+            <div class="field-group" style="margin-bottom:0;"><label>Radius Valid (meter)</label><input type="number" id="inputRadiusLokasi" value="100" min="10"></div>
+          </div>
+          <div style="font-size:11.5px; color:var(--ink-soft); margin-top:10px;">
+            Koordinat terpilih: <strong id="labelKoordinat">Belum dipilih</strong>
+          </div>
+          <button class="btn-primary" id="btnSimpanLokasi" style="margin-top:14px;">Simpan Lokasi Absensi</button>
+          <div class="msg-inline" id="msgLokasi" style="margin-top:12px;"></div>
         </div>
       </div>
 
@@ -1001,6 +1031,135 @@
   muatActivityLogPenuh();
   muatProgramUnggulan();
   muatPengguna();
+
+  // ---------- LOKASI ABSENSI (Peta OpenStreetMap via Leaflet) ----------
+  let petaLokasi = null;
+  let markerLokasi = null;
+  let lingkaranRadius = null;
+  let koordinatTerpilih = null;
+  let petaSudahDiinit = false;
+
+  function initPeta(lat, lng) {
+    if (petaSudahDiinit) {
+      petaLokasi.setView([lat, lng], 17);
+      pindahkanMarker(lat, lng);
+      return;
+    }
+    petaLokasi = L.map("petaLokasi").setView([lat, lng], 17);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19
+    }).addTo(petaLokasi);
+
+    pindahkanMarker(lat, lng);
+
+    petaLokasi.on("click", (e) => {
+      pindahkanMarker(e.latlng.lat, e.latlng.lng);
+    });
+
+    petaSudahDiinit = true;
+  }
+
+  function pindahkanMarker(lat, lng) {
+    koordinatTerpilih = { lat, lng };
+    document.getElementById("labelKoordinat").textContent = lat.toFixed(6) + ", " + lng.toFixed(6);
+
+    if (markerLokasi) {
+      markerLokasi.setLatLng([lat, lng]);
+    } else {
+      markerLokasi = L.marker([lat, lng], { draggable: true }).addTo(petaLokasi);
+      markerLokasi.on("dragend", (e) => {
+        const pos = e.target.getLatLng();
+        koordinatTerpilih = { lat: pos.lat, lng: pos.lng };
+        document.getElementById("labelKoordinat").textContent = pos.lat.toFixed(6) + ", " + pos.lng.toFixed(6);
+        updateLingkaranRadius();
+      });
+    }
+    updateLingkaranRadius();
+  }
+
+  function updateLingkaranRadius() {
+    if (!koordinatTerpilih) return;
+    const radius = Number(document.getElementById("inputRadiusLokasi").value) || 100;
+    if (lingkaranRadius) {
+      lingkaranRadius.setLatLng([koordinatTerpilih.lat, koordinatTerpilih.lng]);
+      lingkaranRadius.setRadius(radius);
+    } else {
+      lingkaranRadius = L.circle([koordinatTerpilih.lat, koordinatTerpilih.lng], {
+        radius: radius, color: "#d4af37", fillColor: "#d4af37", fillOpacity: 0.15
+      }).addTo(petaLokasi);
+    }
+  }
+
+  document.getElementById("inputRadiusLokasi").addEventListener("input", updateLingkaranRadius);
+
+  document.getElementById("btnLokasiHpSaya").addEventListener("click", () => {
+    if (!navigator.geolocation) { alert("Browser tidak mendukung GPS."); return; }
+    document.getElementById("btnLokasiHpSaya").textContent = "Mencari lokasi...";
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        initPeta(pos.coords.latitude, pos.coords.longitude);
+        document.getElementById("btnLokasiHpSaya").innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6-7-12a7 7 0 1114 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Gunakan Lokasi HP Saya Sekarang';
+      },
+      () => {
+        alert("Izin lokasi ditolak. Aktifkan izin lokasi di browser, lalu coba lagi.");
+        document.getElementById("btnLokasiHpSaya").textContent = "Gunakan Lokasi HP Saya Sekarang";
+      },
+      { enableHighAccuracy: true }
+    );
+  });
+
+  document.getElementById("btnSimpanLokasi").addEventListener("click", async () => {
+    const msgBox = document.getElementById("msgLokasi");
+    msgBox.className = "msg-inline";
+    if (!koordinatTerpilih) {
+      msgBox.textContent = "Pilih titik lokasi di peta dulu (klik peta atau gunakan lokasi HP).";
+      msgBox.classList.add("error", "show");
+      return;
+    }
+    const data = {
+      nama_lokasi: document.getElementById("inputNamaLokasi").value.trim() || "Gerbang Utama",
+      latitude: koordinatTerpilih.lat,
+      longitude: koordinatTerpilih.lng,
+      radius_meter: Number(document.getElementById("inputRadiusLokasi").value) || 100
+    };
+    const hasil = await callApi("simpanLokasiAbsensi", { data: data });
+    if (hasil.success) {
+      msgBox.textContent = "Lokasi absensi berhasil disimpan! Siswa/guru sekarang bisa absen dari titik ini.";
+      msgBox.classList.add("success", "show");
+    } else {
+      msgBox.textContent = hasil.message;
+      msgBox.classList.add("error", "show");
+    }
+  });
+
+  // Muat lokasi yang sudah tersimpan (kalau ada) saat tab Lokasi dibuka pertama kali
+  async function muatLokasiTersimpan() {
+    const hasil = await callApi("getLokasiAbsensiAktif");
+    if (hasil.success && hasil.data) {
+      document.getElementById("inputNamaLokasi").value = hasil.data.nama_lokasi;
+      document.getElementById("inputRadiusLokasi").value = hasil.data.radius_meter;
+      initPeta(Number(hasil.data.latitude), Number(hasil.data.longitude));
+    } else {
+      // Belum ada lokasi tersimpan — mulai dari peta Indonesia secara umum
+      initPeta(-2.5, 118);
+      koordinatTerpilih = null;
+      document.getElementById("labelKoordinat").textContent = "Belum dipilih — klik 'Gunakan Lokasi HP Saya' atau klik peta";
+    }
+  }
+
+  // Peta baru di-render saat tab Lokasi Absensi pertama kali dibuka (Leaflet butuh
+  // elemen sudah terlihat di layar supaya render dengan benar)
+  const navLokasi = document.querySelector('.nav-item[data-tab="lokasi"]');
+  let lokasiSudahDimuat = false;
+  navLokasi.addEventListener("click", () => {
+    if (!lokasiSudahDimuat) {
+      lokasiSudahDimuat = true;
+      setTimeout(muatLokasiTersimpan, 100);
+    } else if (petaLokasi) {
+      setTimeout(() => petaLokasi.invalidateSize(), 100);
+    }
+  });
 
   // ---------- PENGGUNA ----------
   if (user.role === "super_admin") {
