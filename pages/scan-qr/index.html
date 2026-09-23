@@ -1,1 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan QR Absensi — SMP ARIEFIBRAHIM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --navy-darkest: #0c1a33; --navy-dark: #14284d; --navy: #1a3260;
+    --gold: #d4af37; --gold-light: #e8ca6a; --cream: #f5f4f0; --ink: #1a2233; --ink-soft: #5b6478;
+    --border-soft: #e3e0d5; --green: #1e7a33; --green-bg: #eaf6ec;
+    --red: #b3261e; --red-bg: #fdecec;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--navy-darkest); color: var(--ink); min-height: 100vh; }
+
+  .topbar { background: var(--navy-dark); color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; }
+  .topbar-brand .mark { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; }
+  .topbar-brand .mark svg { width: 16px; height: 16px; stroke: var(--gold-light); }
+  .topbar-brand .title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 15px; }
+  .topbar-brand .subtitle { font-size: 10px; color: #b9c2d6; }
+  .btn-back { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; cursor: pointer; }
+
+  .scan-area { display: flex; flex-direction: column; align-items: center; padding: 30px 16px; }
+  .scan-title { color: #fff; font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 6px; text-align: center; }
+  .scan-subtitle { color: #9aa4bd; font-size: 13px; margin-bottom: 20px; text-align: center; max-width: 340px; }
+
+  #qrReader { width: 100%; max-width: 380px; border-radius: 16px; overflow: hidden; border: 3px solid var(--gold); }
+
+  .status-line { margin-top: 18px; color: #cdd4e5; font-size: 13px; display: flex; align-items: center; gap: 8px; min-height: 20px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #6fcf7f; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .loc-warning { margin-top: 16px; background: rgba(179,38,30,0.15); border: 1px solid rgba(179,38,30,0.4); color: #ff9d96; padding: 10px 16px; border-radius: 10px; font-size: 12.5px; max-width: 380px; text-align: center; display: none; }
+  .loc-warning.show { display: block; }
+
+  /* ===== MODAL POPUP HASIL ===== */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12,26,51,0.6); align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: #fff; border-radius: 18px; width: 100%; max-width: 400px; overflow: hidden; animation: popIn 0.25s ease; }
+  @keyframes popIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 20px 0; }
+  .modal-brand { display: flex; align-items: center; gap: 8px; }
+  .modal-brand img, .modal-brand .mark { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; background: var(--navy-dark); }
+  .modal-brand .mark svg { width: 15px; height: 15px; stroke: var(--gold-light); }
+  .modal-brand .bname { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13px; color: var(--navy-dark); }
+  .modal-brand .bsub { font-size: 9.5px; color: var(--ink-soft); }
+  .modal-datetime { text-align: right; font-size: 10.5px; color: var(--ink-soft); }
+  .btn-close-modal { background: none; border: none; cursor: pointer; color: var(--ink-soft); font-size: 18px; line-height: 1; padding: 4px; }
+
+  .modal-icon-area { text-align: center; padding: 20px 20px 8px; }
+  .modal-icon-circle { width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+  .modal-icon-circle.sukses-hadir { background: var(--green-bg); }
+  .modal-icon-circle.sukses-terlambat { background: var(--red-bg); }
+  .modal-icon-circle svg { width: 38px; height: 38px; }
+  .modal-icon-circle.sukses-hadir svg { stroke: var(--green); }
+  .modal-icon-circle.sukses-terlambat svg { stroke: var(--red); }
+  .modal-status-title { font-family: 'Playfair Display', serif; font-size: 21px; font-weight: 700; margin-bottom: 4px; }
+  .modal-status-title.hadir { color: var(--green); }
+  .modal-status-title.terlambat { color: var(--red); }
+  .modal-status-desc { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 18px; }
+
+  .modal-profile { display: flex; gap: 14px; align-items: center; background: var(--cream); border-radius: 12px; padding: 14px 16px; margin: 0 20px 16px; }
+  .modal-profile img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: var(--navy); }
+  .modal-profile .avatar-fallback { width: 60px; height: 60px; border-radius: 10px; background: var(--navy); color: var(--gold-light); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+  .modal-profile-info .pnama { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; color: var(--navy-dark); }
+  .modal-profile-info .prow { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .modal-profile-info .prow strong { color: var(--ink); }
+
+  .modal-badge-status { margin: 0 20px 16px; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+  .modal-badge-status.hadir { background: var(--green-bg); }
+  .modal-badge-status.terlambat { background: var(--red-bg); }
+  .modal-badge-status svg { width: 18px; height: 18px; }
+  .modal-badge-status.hadir svg { stroke: var(--green); }
+  .modal-badge-status.terlambat svg { stroke: var(--red); }
+  .modal-badge-status .blabel { font-size: 11px; color: var(--ink-soft); }
+  .modal-badge-status .bvalue { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 17px; }
+  .modal-badge-status.hadir .bvalue { color: var(--green); }
+  .modal-badge-status.terlambat .bvalue { color: var(--red); }
+
+  .modal-detail-list { margin: 0 20px 20px; font-size: 12.5px; color: var(--ink-soft); }
+  .modal-detail-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .modal-detail-row svg { width: 14px; height: 14px; stroke: var(--navy); flex-shrink: 0; }
+  .modal-detail-row .dlabel { width: 76px; }
+  .modal-detail-row .dvalue { color: var(--ink); font-weight: 500; }
+
+  .btn-tutup-modal { display: block; width: calc(100% - 40px); margin: 0 20px 20px; padding: 14px; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-tutup-modal.hadir { background: var(--green); }
+  .btn-tutup-modal.terlambat { background: var(--red); }
+
+  /* Modal error (gagal absen) */
+  .modal-icon-circle.gagal { background: var(--red-bg); }
+  .modal-icon-circle.gagal svg { stroke: var(--red); }
+  .modal-error-text { text-align: center; padding: 0 20px 20px; font-size: 13px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/></svg></div>
+    <div><div class="title">SMP ARIEFIBRAHIM</div><div class="subtitle">Scan QR Absensi</div></div>
+  </div>
+  <button class="btn-back" onclick="history.back()">← Kembali</button>
+</div>
+
+<div class="scan-area">
+  <div class="scan-title">Arahkan Kamera ke QR Code</div>
+  <div class="scan-subtitle">Kartu pelajar/guru — pastikan Anda berada di area sekolah untuk absensi berhasil.</div>
+
+  <div id="qrReader"></div>
+
+  <div class="status-line"><span class="status-dot"></span><span id="statusText">Meminta izin kamera...</span></div>
+  <div class="loc-warning" id="locWarning">⚠ Izin lokasi ditolak. Absensi tidak bisa diproses tanpa akses lokasi GPS.</div>
+</div>
+
+<!-- ===== MODAL HASIL SUKSES (Hadir/Terlambat/Pulang) ===== -->
+<div class="modal-overlay" id="modalHasil">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-brand">
+        <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/></svg></div>
+        <div><div class="bname">SMP ARIEFIBRAHIM</div><div class="bsub">Smart School Attendance System</div></div>
+      </div>
+      <button class="btn-close-modal" onclick="tutupModalHasil()">✕</button>
+    </div>
+
+    <div class="modal-icon-area">
+      <div class="modal-icon-circle" id="iconCircle">
+        <svg id="iconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <div class="modal-status-title" id="statusTitle">Absensi Berhasil!</div>
+      <div class="modal-status-desc" id="statusDesc">Data kehadiran telah tersimpan dengan aman.</div>
+    </div>
+
+    <div class="modal-profile">
+      <img id="fotoSiswa" style="display:none;" alt="">
+      <div class="avatar-fallback" id="avatarFallback">-</div>
+      <div class="modal-profile-info">
+        <div class="pnama" id="namaSiswa">-</div>
+        <div class="prow"><span id="idLabel">NISN</span>&nbsp;: <strong id="idSiswa">-</strong></div>
+        <div class="prow" id="baresKelasWrap">Kelas&nbsp;: <strong id="kelasSiswa">-</strong></div>
+        <div class="prow">Jenis&nbsp;: <strong id="jenisSiswa">-</strong></div>
+      </div>
+    </div>
+
+    <div class="modal-badge-status" id="badgeStatus">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+      <div><div class="blabel">Status Kehadiran</div><div class="bvalue" id="badgeValue">HADIR</div></div>
+    </div>
+
+    <div class="modal-detail-list">
+      <div class="modal-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="dlabel">Tanggal</span><span class="dvalue" id="detTanggal">-</span></div>
+      <div class="modal-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span class="dlabel">Waktu Scan</span><span class="dvalue" id="detJam">-</span></div>
+      <div class="modal-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-12a7 7 0 1114 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span class="dlabel">Lokasi</span><span class="dvalue">SMP ARIEFIBRAHIM</span></div>
+      <div class="modal-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="dlabel">Metode</span><span class="dvalue">QR Code</span></div>
+    </div>
+
+    <button class="btn-tutup-modal" id="btnTutupHasil" onclick="tutupModalHasil()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+      Tutup
+    </button>
+  </div>
+</div>
+
+<!-- ===== MODAL GAGAL ===== -->
+<div class="modal-overlay" id="modalGagal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-brand">
+        <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/></svg></div>
+        <div><div class="bname">SMP ARIEFIBRAHIM</div><div class="bsub">Smart School Attendance System</div></div>
+      </div>
+      <button class="btn-close-modal" onclick="tutupModalGagal()">✕</button>
+    </div>
+    <div class="modal-icon-area">
+      <div class="modal-icon-circle gagal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+      <div class="modal-status-title terlambat">Absensi Gagal</div>
+    </div>
+    <div class="modal-error-text" id="pesanGagal">-</div>
+    <button class="btn-tutup-modal terlambat" onclick="tutupModalGagal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      Tutup &amp; Coba Lagi
+    </button>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+
+  const token = sessionStorage.getItem("smp_token");
+  if (!token) window.location.href = "../../index.html";
+
+  let posisiSekarang = null;
+  let sedangProses = false;
+  let scannerAktif = null;
+
+  // ---------- Minta izin lokasi sekali di awal, lalu pantau terus ----------
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        posisiSekarang = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        document.getElementById("locWarning").classList.remove("show");
+        document.getElementById("statusText").textContent = "Siap memindai QR Code...";
+      },
+      (err) => {
+        document.getElementById("locWarning").classList.add("show");
+        document.getElementById("statusText").textContent = "Menunggu izin lokasi...";
+      },
+      { enableHighAccuracy: true, maximumAge: 5000 }
+    );
+  } else {
+    document.getElementById("locWarning").classList.add("show");
+    document.getElementById("locWarning").textContent = "Browser tidak mendukung GPS. Gunakan browser modern (Chrome/Safari terbaru).";
+  }
+
+  // ---------- Inisialisasi scanner kamera ----------
+  function mulaiScanner() {
+    scannerAktif = new Html5Qrcode("qrReader");
+    scannerAktif.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      onScanSukses,
+      () => {} // error per-frame diabaikan, normal saat kamera belum fokus ke QR
+    ).catch((err) => {
+      document.getElementById("statusText").textContent = "Gagal mengakses kamera. Izinkan akses kamera di browser.";
+    });
+  }
+  mulaiScanner();
+
+  async function onScanSukses(qrValue) {
+    if (sedangProses) return; // cegah scan dobel saat masih proses
+    if (!posisiSekarang) {
+      document.getElementById("statusText").textContent = "Menunggu lokasi GPS, coba scan lagi sebentar...";
+      return;
+    }
+    sedangProses = true;
+    document.getElementById("statusText").textContent = "Memproses...";
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "prosesAbsensi", token: token, qr_value: qrValue,
+          lat: posisiSekarang.lat, lng: posisiSekarang.lng
+        })
+      });
+      const hasil = await res.json();
+
+      if (hasil.success) {
+        tampilkanModalHasil(hasil.data);
+      } else {
+        tampilkanModalGagal(hasil.message);
+      }
+    } catch (e) {
+      tampilkanModalGagal("Tidak bisa terhubung ke server. Periksa koneksi internet.");
+    } finally {
+      sedangProses = false;
+      document.getElementById("statusText").textContent = "Siap memindai QR Code...";
+    }
+  }
+
+  function tampilkanModalHasil(data) {
+    const isTerlambat = data.status === "TERLAMBAT";
+    const kelasKey = isTerlambat ? "terlambat" : "hadir";
+
+    document.getElementById("iconCircle").className = "modal-icon-circle sukses-" + kelasKey;
+    document.getElementById("iconSvg").innerHTML = isTerlambat
+      ? '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'
+      : '<path d="M20 6L9 17l-5-5"/>';
+
+    document.getElementById("statusTitle").className = "modal-status-title " + kelasKey;
+    document.getElementById("statusTitle").textContent = isTerlambat ? "Tercatat Terlambat" : (data.tipe === "PULANG" ? "Absensi Pulang Berhasil!" : "Absensi Berhasil!");
+    document.getElementById("statusDesc").textContent = isTerlambat
+      ? "Keterlambatan " + data.menit_terlambat + " menit telah tercatat."
+      : "Data kehadiran telah tersimpan dengan aman.";
+
+    if (data.foto_url) {
+      document.getElementById("fotoSiswa").src = data.foto_url;
+      document.getElementById("fotoSiswa").style.display = "block";
+      document.getElementById("avatarFallback").style.display = "none";
+    } else {
+      document.getElementById("fotoSiswa").style.display = "none";
+      document.getElementById("avatarFallback").style.display = "flex";
+      document.getElementById("avatarFallback").textContent = data.nama.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+    }
+
+    document.getElementById("namaSiswa").textContent = data.nama;
+    document.getElementById("idLabel").textContent = data.id_label;
+    document.getElementById("idSiswa").textContent = data.id_tampil || "-";
+    document.getElementById("kelasSiswa").textContent = data.kelas;
+    document.getElementById("baresKelasWrap").style.display = data.jenis === "Guru" ? "none" : "block";
+    document.getElementById("jenisSiswa").textContent = data.jenis;
+
+    const badgeEl = document.getElementById("badgeStatus");
+    badgeEl.className = "modal-badge-status " + kelasKey;
+    document.getElementById("badgeValue").textContent = data.tipe === "PULANG" ? "PULANG" : data.status;
+
+    document.getElementById("detTanggal").textContent = formatTanggalIndo(data.tanggal);
+    document.getElementById("detJam").textContent = data.jam + " WIB";
+
+    document.getElementById("btnTutupHasil").className = "btn-tutup-modal " + kelasKey;
+
+    document.getElementById("modalHasil").classList.add("show");
+
+    // Auto-tutup setelah beberapa detik supaya siap untuk siswa berikutnya
+    setTimeout(() => { tutupModalHasil(); }, 4000);
+  }
+
+  function formatTanggalIndo(tglISO) {
+    const [y,m,d] = tglISO.split("-").map(Number);
+    const hariArr = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+    const bulanArr = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+    const tgl = new Date(y, m-1, d);
+    return hariArr[tgl.getDay()] + ", " + d + " " + bulanArr[m-1] + " " + y;
+  }
+
+  function tutupModalHasil() { document.getElementById("modalHasil").classList.remove("show"); }
+
+  function tampilkanModalGagal(pesan) {
+    document.getElementById("pesanGagal").textContent = pesan;
+    document.getElementById("modalGagal").classList.add("show");
+    setTimeout(() => { tutupModalGagal(); }, 3500);
+  }
+  function tutupModalGagal() { document.getElementById("modalGagal").classList.remove("show"); }
+</script>
+</body>
+</html>
 
