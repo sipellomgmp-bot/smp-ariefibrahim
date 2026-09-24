@@ -716,6 +716,22 @@
   </div>
 </div>
 
+<!-- ===== MODAL: LIHAT/CETAK QR ===== -->
+<div class="modal-overlay" id="modalQR">
+  <div class="modal-box" style="text-align:center;">
+    <div class="modal-title">Kartu QR Absensi</div>
+    <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:16px; color:var(--navy-dark);" id="qrNamaTampil">-</div>
+    <div style="font-size:12.5px; color:var(--ink-soft); margin-top:2px;" id="qrIdTampil">-</div>
+    <div style="font-size:12px; color:var(--ink-soft); margin-bottom:16px;" id="qrSubTampil">-</div>
+    <img id="qrImgTampil" src="" alt="QR Code" style="width:220px; height:220px; border:1px solid var(--border-soft); border-radius:10px; padding:10px; background:#fff;">
+    <div style="font-size:10.5px; color:var(--ink-soft); margin-top:10px; word-break:break-all;" id="qrValueTampil">-</div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-secondary" onclick="tutupModal('modalQR')">Tutup</button>
+      <button class="btn-primary" id="btnCetakQR">🖨️ Cetak QR</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
 
@@ -895,6 +911,7 @@
         <td><span class="badge ${s.is_active ? 'aktif' : 'nonaktif'}">${s.is_active ? 'Aktif' : 'Nonaktif'}</span></td>
         <td class="action-group">
           <button class="link-action" onclick="bukaEditSiswa('${s.siswa_id}')">Edit</button>
+          <button class="link-action" onclick="bukaModalQR('siswa','${s.siswa_id}')">Lihat QR</button>
           <button class="link-action ${s.is_active ? 'danger' : ''}" onclick="toggleStatusSiswa('${s.siswa_id}', ${!s.is_active})">${s.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button>
         </td>
       </tr>`).join("");
@@ -999,6 +1016,7 @@
         <td><span class="badge ${g.is_active ? 'aktif' : 'nonaktif'}">${g.is_active ? 'Aktif' : 'Nonaktif'}</span></td>
         <td class="action-group">
           <button class="link-action" onclick="bukaEditGuru('${g.guru_id}')">Edit</button>
+          <button class="link-action" onclick="bukaModalQR('guru','${g.guru_id}')">Lihat QR</button>
           <button class="link-action ${g.is_active ? 'danger' : ''}" onclick="toggleStatusGuru('${g.guru_id}', ${!g.is_active})">${g.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button>
         </td>
       </tr>`).join("");
@@ -1032,6 +1050,45 @@
     document.getElementById("inputNamaGuru").value = g.nama_lengkap;
     document.getElementById("inputHpGuru").value = g.nomor_hp;
     bukaModal("modalGuru");
+  }
+
+  function bukaModalQR(tipe, id) {
+    const data = tipe === 'siswa' ? cacheSiswa.find(x => x.siswa_id === id) : cacheGuru.find(x => x.guru_id === id);
+    if (!data || !data.qr_code_value) { alert("QR belum tersedia untuk data ini."); return; }
+
+    const qrValue = data.qr_code_value;
+    const idLabel = tipe === 'siswa' ? 'NIS' : 'NIP/NUPTK';
+    const idValue = tipe === 'siswa' ? data.nis : data.nip_nuptk;
+    const subInfo = tipe === 'siswa' ? data.nama_kelas : 'Guru';
+    const urlQR = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrValue);
+
+    document.getElementById('qrNamaTampil').textContent = data.nama_lengkap;
+    document.getElementById('qrIdTampil').textContent = idLabel + ': ' + (idValue || '-');
+    document.getElementById('qrSubTampil').textContent = subInfo || '-';
+    document.getElementById('qrValueTampil').textContent = qrValue;
+    document.getElementById('qrImgTampil').src = urlQR;
+
+    document.getElementById('btnCetakQR').onclick = () => cetakQR(urlQR, data.nama_lengkap, idLabel, idValue, subInfo);
+    bukaModal('modalQR');
+  }
+
+  function cetakQR(urlQR, nama, idLabel, idValue, subInfo) {
+    const jendela = window.open('', '_blank');
+    jendela.document.write(`
+      <html><head><title>QR - ${nama}</title>
+      <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+        img { width: 260px; height: 260px; margin: 16px 0; }
+        h2 { margin-bottom: 4px; } p { color: #555; margin: 2px 0; }
+      </style></head>
+      <body>
+        <h2>${nama}</h2>
+        <p>${idLabel}: ${idValue || '-'}</p>
+        <p>${subInfo || ''}</p>
+        <img src="${urlQR}" onload="window.print();">
+      </body></html>
+    `);
+    jendela.document.close();
   }
 
   document.getElementById("inputFotoGuruFile").addEventListener("change", (e) => {
