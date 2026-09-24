@@ -160,8 +160,8 @@
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Daftar Kelas</button>
 
       <div class="nav-group-label">JURNAL PEMBELAJARAN</div>
-      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Isi Jurnal</button>
-      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Riwayat Jurnal</button>
+      <button class="nav-item" data-tab="jurnal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Isi Jurnal</button>
+      <button class="nav-item" data-tab="riwayatjurnal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Riwayat Jurnal</button>
 
       <button class="nav-item" data-tab="programunggulan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Program Unggulan</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Acara &amp; Kegiatan</button>
@@ -209,14 +209,14 @@
         <div class="grid-2col">
           <div class="panel-box">
             <div class="panel-box-title">Jadwal Mengajar Hari Ini</div>
-            <div class="placeholder-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg><strong>Belum ada jadwal terisi</strong>Fitur input Jadwal Mengajar akan dibangun di roadmap Langkah 5. Hubungi Operator untuk pengisian manual sementara.</div>
+            <div id="jadwalHariIniList"><div class="empty-state">Memuat...</div></div>
           </div>
           <div>
             <div class="panel-box">
               <div class="panel-box-title">Aksi Cepat</div>
               <div class="quick-grid">
                 <button class="quick-btn primary" onclick="window.location.href='../scan-qr/index.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Scan QR Siswa</button>
-                <button class="quick-btn" onclick="alert('Isi Jurnal akan aktif di roadmap Langkah 5.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Isi Jurnal</button>
+                <button class="quick-btn" onclick="pindahTab('jurnal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Isi Jurnal</button>
                 <button class="quick-btn" onclick="alert('Kirim WhatsApp akan aktif di roadmap Langkah 6.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Kirim WhatsApp</button>
                 <button class="quick-btn" onclick="alert('Buat Acara akan aktif di roadmap Langkah 10.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v4M16 2v4M3 10h18"/></svg>Buat Acara</button>
               </div>
@@ -243,6 +243,17 @@
       <div class="tab-panel" id="panel-programunggulan">
         <div class="panel-header"><div class="panel-title">Program Unggulan</div></div>
         <div id="listProgramUnggulanFull"><div class="empty-state">Memuat...</div></div>
+      </div>
+
+      <div class="tab-panel" id="panel-jurnal">
+        <div class="panel-header"><div class="panel-title">Isi Jurnal Pembelajaran</div></div>
+        <div id="jurnalTabList"><div class="empty-state">Memuat...</div></div>
+      </div>
+
+      <div class="tab-panel" id="panel-riwayatjurnal">
+        <div class="panel-header"><div class="panel-title">Riwayat Jurnal Saya</div></div>
+        <table><thead><tr><th>Tanggal</th><th>Kelas</th><th>Mapel</th><th>Materi</th><th>Status</th></tr></thead>
+        <tbody id="tabelRiwayatJurnal"><tr><td colspan="5" class="empty-state">Memuat data...</td></tr></tbody></table>
       </div>
 
       <div class="tab-panel" id="panel-segerahadir">
@@ -391,6 +402,97 @@
   muatRingkasanAbsensi();
   muatLogAktivitas();
   muatProgram();
+  muatJadwalHariIni();
+
+  // ---------- JADWAL & JURNAL ----------
+  async function muatJadwalHariIni() {
+    const hasil = await callApi("getJadwalGuruHariIni");
+    const container = document.getElementById("jadwalHariIniList");
+    const containerTab = document.getElementById("jurnalTabList");
+
+    if (!hasil.success) {
+      container.innerHTML = `<div class="placeholder-box"><strong>${hasil.message}</strong></div>`;
+      containerTab.innerHTML = container.innerHTML;
+      return;
+    }
+    if (hasil.data.length === 0) {
+      container.innerHTML = '<div class="placeholder-box"><strong>Tidak ada jadwal hari ini</strong>Hubungi Operator kalau seharusnya ada jadwal mengajar hari ini.</div>';
+      containerTab.innerHTML = container.innerHTML;
+      return;
+    }
+
+    const htmlList = hasil.data.map(j => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1efe9;">
+        <div>
+          <strong style="font-size:13px;">${j.jam_mulai}-${j.jam_selesai} · ${j.nama_kelas}</strong>
+          <div style="font-size:11.5px; color:var(--ink-soft);">${j.nama_mapel}</div>
+        </div>
+        ${j.sudah_diisi
+          ? '<span class="badge aktif">Sudah Diisi</span>'
+          : `<button class="quick-btn" style="padding:8px 12px;" onclick="bukaModalJurnal('${j.jadwal_id}','${j.nama_kelas}','${j.nama_mapel}')">Isi Jurnal</button>`}
+      </div>`).join("");
+
+    container.innerHTML = htmlList;
+    containerTab.innerHTML = htmlList;
+  }
+
+  function bukaModalJurnal(jadwalId, namaKelas, namaMapel) {
+    document.getElementById("jadwalIdJurnal").value = jadwalId;
+    document.getElementById("subJudulModalJurnal").textContent = namaKelas + " · " + namaMapel;
+    document.getElementById("inputMateriJurnal").value = "";
+    document.getElementById("inputCatatanJurnal").value = "";
+    document.getElementById("msgIsiJurnal").style.display = "none";
+    document.getElementById("modalIsiJurnal").style.display = "flex";
+  }
+  function tutupModalJurnal() { document.getElementById("modalIsiJurnal").style.display = "none"; }
+
+  document.getElementById("btnSimpanJurnal").addEventListener("click", async () => {
+    const jadwalId = document.getElementById("jadwalIdJurnal").value;
+    const materi = document.getElementById("inputMateriJurnal").value.trim();
+    const catatan = document.getElementById("inputCatatanJurnal").value.trim();
+    const hasil = await callApi("isiJurnal", { jadwal_id: jadwalId, materi: materi, catatan: catatan });
+    const msgBox = document.getElementById("msgIsiJurnal");
+    if (hasil.success) {
+      tutupModalJurnal();
+      muatJadwalHariIni();
+    } else {
+      msgBox.textContent = hasil.message;
+      msgBox.style.display = "block";
+    }
+  });
+
+  async function muatRiwayatJurnal() {
+    const hasil = await callApi("getRiwayatJurnalGuru");
+    const tbody = document.getElementById("tabelRiwayatJurnal");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada riwayat jurnal.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map(j => {
+      const tgl = j.tanggal instanceof Date ? j.tanggal : new Date(j.tanggal);
+      return `<tr><td>${tgl.toLocaleDateString("id-ID")}</td><td>${j.nama_kelas}</td><td>${j.nama_mapel}</td><td>${j.materi}</td><td><span class="badge aktif">${j.status_pengisian}</span></td></tr>`;
+    }).join("");
+  }
+
+  document.querySelector('.nav-item[data-tab="riwayatjurnal"]').addEventListener("click", muatRiwayatJurnal);
 </script>
+<!-- ===== MODAL: ISI JURNAL ===== -->
+<div class="modal-overlay" id="modalIsiJurnal" style="display:none; position:fixed; inset:0; background:rgba(12,26,51,0.5); align-items:center; justify-content:center; z-index:50; padding:20px;">
+  <div style="background:#fff; border-radius:14px; padding:26px; width:100%; max-width:440px;">
+    <div style="font-family:'Playfair Display',serif; font-size:19px; font-weight:700; color:var(--navy-dark); margin-bottom:6px;" id="judulModalJurnal">Isi Jurnal Pembelajaran</div>
+    <div style="font-size:12px; color:var(--ink-soft); margin-bottom:16px;" id="subJudulModalJurnal"></div>
+    <div class="msg-inline error" id="msgIsiJurnal" style="display:none; padding:10px 12px; border-radius:8px; font-size:12px; margin-bottom:14px; background:var(--red-bg); color:var(--red);"></div>
+    <input type="hidden" id="jadwalIdJurnal">
+    <div style="margin-bottom:14px;"><label style="display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:6px;">Materi yang Diajarkan</label>
+      <textarea id="inputMateriJurnal" rows="3" style="width:100%; padding:10px 12px; border:1.5px solid var(--border-soft); border-radius:8px; font-size:13px; font-family:'Inter',sans-serif;"></textarea></div>
+    <div style="margin-bottom:14px;"><label style="display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:6px;">Catatan (opsional)</label>
+      <textarea id="inputCatatanJurnal" rows="2" style="width:100%; padding:10px 12px; border:1.5px solid var(--border-soft); border-radius:8px; font-size:13px; font-family:'Inter',sans-serif;"></textarea></div>
+    <div style="display:flex; gap:10px;">
+      <button onclick="tutupModalJurnal()" style="flex:1; background:#fff; border:1.5px solid var(--border-soft); padding:10px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink-soft);">Batal</button>
+      <button id="btnSimpanJurnal" style="flex:1; background:var(--navy-dark); color:#fff; border:none; padding:10px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Simpan Jurnal</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
