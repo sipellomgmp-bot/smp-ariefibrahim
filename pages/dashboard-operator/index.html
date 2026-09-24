@@ -310,12 +310,16 @@
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Guru</button>
 
       <div class="nav-group-label">LAPORAN</div>
+      <div class="nav-group-label">KOMUNIKASI</div>
+      <button class="nav-item" data-tab="whatsapp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>WhatsApp Center</button>
+
+      <div class="nav-group-label">LAPORAN</div>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Laporan Harian</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Laporan Bulanan</button>
 
       <div class="nav-group-label" id="groupSistem">SISTEM</div>
       <button class="nav-item" data-tab="activitylog" id="menuActivityLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Activity Log</button>
-      <button class="nav-item" data-tab="segerahadir" id="menuPengaturan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82"/></svg>Pengaturan</button>
+      <button class="nav-item" data-tab="pengaturan" id="menuPengaturan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82"/></svg>Pengaturan</button>
     </div>
 
     <div class="sidebar-footer">
@@ -446,6 +450,50 @@
         </div>
       </div>
 
+      <!-- ===== WHATSAPP CENTER ===== -->
+      <div class="tab-panel" id="panel-whatsapp">
+        <div class="panel-header"><div class="panel-title">WhatsApp Center</div></div>
+
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:16px;">
+          <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><div class="stat-label">Total Hari Ini</div><div class="stat-value" id="waTotal">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg></div><div><div class="stat-label">Berhasil</div><div class="stat-value" id="waSent">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div><div class="stat-label">Gagal</div><div class="stat-value" id="waFailed">-</div></div></div>
+        </div>
+
+        <table><thead><tr><th>Waktu</th><th>Tujuan</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody id="tabelWhatsApp"><tr><td colspan="5" class="empty-state">Memuat data...</td></tr></tbody></table>
+      </div>
+
+      <!-- ===== PENGATURAN ===== -->
+      <div class="tab-panel" id="panel-pengaturan">
+        <div class="panel-header"><div class="panel-title">Pengaturan Sistem</div></div>
+
+        <div class="panel-box" style="margin-bottom:16px;">
+          <div class="panel-box-title">Aturan Absensi</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div class="field-group" style="margin-bottom:0;"><label>Jam Masuk</label><input type="time" id="pgJamMasuk"></div>
+            <div class="field-group" style="margin-bottom:0;"><label>Toleransi Terlambat (menit)</label><input type="number" id="pgToleransi"></div>
+            <div class="field-group" style="margin-bottom:0;"><label>Jam Pulang</label><input type="time" id="pgJamPulang"></div>
+            <div class="field-group" style="margin-bottom:0;"><label>Batas Jam "Belum Ada Keterangan"</label><input type="time" id="pgBatasBelumHadir"></div>
+          </div>
+        </div>
+
+        <div class="panel-box" style="margin-bottom:16px;">
+          <div class="panel-box-title">Integrasi WhatsApp (Fonnte)</div>
+          <p style="font-size:12px; color:var(--ink-soft); margin-bottom:12px;">
+            Daftar gratis di <strong>fonnte.com</strong>, hubungkan nomor WA sekolah, lalu salin Token dari dashboard Fonnte ke sini.
+          </p>
+          <div class="field-group"><label>Aktifkan Notifikasi WhatsApp</label>
+            <select id="pgWaAktif"><option value="TRUE">Aktif</option><option value="FALSE">Nonaktif</option></select>
+          </div>
+          <div class="field-group"><label>Token Fonnte</label><input type="text" id="pgWaToken" placeholder="Tempel token dari dashboard Fonnte"></div>
+          <div class="field-group"><label>URL Endpoint Fonnte</label><input type="text" id="pgWaUrl"></div>
+        </div>
+
+        <button class="btn-primary" id="btnSimpanPengaturan">Simpan Pengaturan</button>
+        <div class="msg-inline" id="msgPengaturan" style="margin-top:12px;"></div>
+      </div>
+
       <!-- ===== LOKASI ABSENSI (peta OpenStreetMap) ===== -->
       <div class="tab-panel" id="panel-lokasi">
         <div class="panel-header"><div class="panel-title">Lokasi Absensi</div></div>
@@ -571,6 +619,14 @@
     <div class="field-group"><label>Kelas</label><select id="inputKelasSiswa"><option value="">-- Pilih Kelas --</option></select></div>
     <div class="field-group"><label>Jenis Kelamin</label><select id="inputJK"><option value="">-- Pilih --</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
     <div class="field-group"><label>Alamat</label><input type="text" id="inputAlamatSiswa"></div>
+    <hr style="border:none; border-top:1px solid var(--border-soft); margin:16px 0;">
+    <div style="font-size:12.5px; font-weight:700; color:var(--navy-dark); margin-bottom:10px;">Data Wali Murid (untuk notifikasi WhatsApp)</div>
+    <div class="field-group"><label>Nama Wali</label><input type="text" id="inputWaliNama"></div>
+    <div class="field-group"><label>Nomor WhatsApp Wali</label><input type="text" id="inputWaliNomor" placeholder="628xxxxxxxxxx"></div>
+    <div class="field-group"><label>Hubungan</label>
+      <select id="inputWaliHubungan"><option value="Ayah">Ayah</option><option value="Ibu">Ibu</option><option value="Wali">Wali</option></select>
+    </div>
+    <div class="field-group"><label style="display:flex; align-items:center; gap:8px; font-weight:500;"><input type="checkbox" id="inputWaliConsent" checked style="width:auto;"> Wali setuju menerima notifikasi WhatsApp</label></div>
     <div class="modal-actions"><button class="btn-secondary" onclick="tutupModal('modalSiswa')">Batal</button><button class="btn-primary" id="btnSimpanSiswa">Simpan</button></div>
   </div>
 </div>
@@ -816,8 +872,10 @@
     document.getElementById("msgSiswa").classList.remove("show");
     document.getElementById("groupFotoSiswa").style.display = "none";
     document.getElementById("hintFotoTambah").style.display = "block";
-    ["inputNis","inputNisn","inputNamaSiswa","inputAlamatSiswa"].forEach(id => document.getElementById(id).value = "");
+    ["inputNis","inputNisn","inputNamaSiswa","inputAlamatSiswa","inputWaliNama","inputWaliNomor"].forEach(id => document.getElementById(id).value = "");
     document.getElementById("inputJK").value = "";
+    document.getElementById("inputWaliHubungan").value = "Wali";
+    document.getElementById("inputWaliConsent").checked = true;
     muatDropdownKelas("inputKelasSiswa");
     bukaModal("modalSiswa");
   });
@@ -836,6 +894,10 @@
     document.getElementById("inputNamaSiswa").value = s.nama_lengkap;
     document.getElementById("inputJK").value = s.jenis_kelamin;
     document.getElementById("inputAlamatSiswa").value = s.alamat;
+    document.getElementById("inputWaliNama").value = s.wali_nama || "";
+    document.getElementById("inputWaliNomor").value = s.wali_nomor || "";
+    document.getElementById("inputWaliHubungan").value = s.wali_hubungan || "Wali";
+    document.getElementById("inputWaliConsent").checked = s.wali_consent !== false;
     muatDropdownKelas("inputKelasSiswa", s.kelas_id);
     bukaModal("modalSiswa");
   }
@@ -859,7 +921,11 @@
       nama_lengkap: document.getElementById("inputNamaSiswa").value.trim(),
       kelas_id: document.getElementById("inputKelasSiswa").value,
       jenis_kelamin: document.getElementById("inputJK").value,
-      alamat: document.getElementById("inputAlamatSiswa").value.trim()
+      alamat: document.getElementById("inputAlamatSiswa").value.trim(),
+      wali_nama: document.getElementById("inputWaliNama").value.trim(),
+      wali_nomor: document.getElementById("inputWaliNomor").value.trim(),
+      wali_hubungan: document.getElementById("inputWaliHubungan").value,
+      wali_consent: document.getElementById("inputWaliConsent").checked
     };
     const editId = document.getElementById("editSiswaId").value;
     const hasil = editId
@@ -1031,6 +1097,79 @@
   muatActivityLogPenuh();
   muatProgramUnggulan();
   muatPengguna();
+
+  // ---------- WHATSAPP CENTER ----------
+  async function muatWhatsAppCenter() {
+    const ringkas = await callApi("getRingkasanWhatsAppHariIni");
+    if (ringkas.success) {
+      document.getElementById("waTotal").textContent = ringkas.data.total;
+      document.getElementById("waSent").textContent = ringkas.data.sent;
+      document.getElementById("waFailed").textContent = ringkas.data.failed;
+    }
+
+    const hasil = await callApi("getWhatsAppLogTerbaru", { jumlah: 40 });
+    const tbody = document.getElementById("tabelWhatsApp");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada pesan terkirim. Notifikasi akan otomatis muncul di sini saat ada siswa absen.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map(l => {
+      const waktu = new Date(l.dikirim_pada);
+      const jamStr = waktu.toLocaleDateString("id-ID") + " " + String(waktu.getHours()).padStart(2,"0") + ":" + String(waktu.getMinutes()).padStart(2,"0");
+      const badgeClass = l.status === "SENT" ? "aktif" : (l.status === "QUEUED" ? "" : "nonaktif");
+      return `<tr>
+        <td>${jamStr}</td><td>${l.tujuan_nomor}</td><td>${l.kategori}</td>
+        <td><span class="badge ${badgeClass}">${l.status}</span>${l.pesan_error ? '<br><span style="font-size:10px;color:var(--ink-soft);">'+l.pesan_error+'</span>' : ''}</td>
+        <td>${l.status === "FAILED" ? `<button class="link-action" onclick="kirimUlang('${l.log_id}')">Kirim Ulang</button>` : '-'}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function kirimUlang(logId) {
+    const hasil = await callApi("kirimUlangWhatsApp", { log_id: logId });
+    if (!hasil.success) alert(hasil.message);
+    muatWhatsAppCenter();
+  }
+
+  // ---------- PENGATURAN ----------
+  async function muatPengaturan() {
+    const hasil = await callApi("getPengaturanUntukForm");
+    if (!hasil.success) return;
+    const p = hasil.data;
+    document.getElementById("pgJamMasuk").value = p.jam_masuk || "07:00";
+    document.getElementById("pgToleransi").value = p.toleransi_menit || 10;
+    document.getElementById("pgJamPulang").value = p.jam_pulang || "14:00";
+    document.getElementById("pgBatasBelumHadir").value = p.batas_jam_belum_hadir || "08:00";
+    document.getElementById("pgWaAktif").value = String(p.whatsapp_aktif).toUpperCase() === "FALSE" ? "FALSE" : "TRUE";
+    document.getElementById("pgWaToken").value = p.whatsapp_gateway_token || "";
+    document.getElementById("pgWaUrl").value = p.whatsapp_gateway_url || "";
+  }
+
+  document.getElementById("btnSimpanPengaturan").addEventListener("click", async () => {
+    const data = {
+      jam_masuk: document.getElementById("pgJamMasuk").value,
+      toleransi_menit: document.getElementById("pgToleransi").value,
+      jam_pulang: document.getElementById("pgJamPulang").value,
+      batas_jam_belum_hadir: document.getElementById("pgBatasBelumHadir").value,
+      whatsapp_aktif: document.getElementById("pgWaAktif").value,
+      whatsapp_gateway_token: document.getElementById("pgWaToken").value.trim(),
+      whatsapp_gateway_url: document.getElementById("pgWaUrl").value.trim()
+    };
+    const hasil = await callApi("updatePengaturan", { data: data });
+    const msgBox = document.getElementById("msgPengaturan");
+    msgBox.className = "msg-inline";
+    if (hasil.success) {
+      msgBox.textContent = "Pengaturan berhasil disimpan.";
+      msgBox.classList.add("success", "show");
+    } else {
+      msgBox.textContent = hasil.message;
+      msgBox.classList.add("error", "show");
+    }
+  });
+
+  // Muat data WhatsApp Center & Pengaturan saat tab pertama kali dibuka
+  document.querySelector('.nav-item[data-tab="whatsapp"]').addEventListener("click", muatWhatsAppCenter);
+  document.querySelector('.nav-item[data-tab="pengaturan"]').addEventListener("click", muatPengaturan);
 
   // ---------- LOKASI ABSENSI (Peta OpenStreetMap via Leaflet) ----------
   let petaLokasi = null;
