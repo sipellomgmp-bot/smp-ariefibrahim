@@ -295,7 +295,8 @@
       <button class="nav-item" data-tab="guru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Guru</button>
       <button class="nav-item" data-tab="kelas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Kelas</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg>Wali Kelas</button>
-      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>Mata Pelajaran</button>
+      <button class="nav-item" data-tab="mapel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>Mata Pelajaran</button>
+      <button class="nav-item" data-tab="jadwal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>Jadwal Mengajar</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Ekstrakurikuler</button>
       <button class="nav-item" data-tab="programunggulan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Program Unggulan</button>
 
@@ -450,6 +451,20 @@
         </div>
       </div>
 
+      <!-- ===== MATA PELAJARAN ===== -->
+      <div class="tab-panel" id="panel-mapel">
+        <div class="panel-header"><div class="panel-title">Mata Pelajaran</div><button class="btn-primary" id="btnTambahMapel">+ Tambah Mapel</button></div>
+        <table><thead><tr><th>Kode</th><th>Nama Mata Pelajaran</th></tr></thead>
+        <tbody id="tabelMapel"><tr><td colspan="2" class="empty-state">Memuat data...</td></tr></tbody></table>
+      </div>
+
+      <!-- ===== JADWAL MENGAJAR ===== -->
+      <div class="tab-panel" id="panel-jadwal">
+        <div class="panel-header"><div class="panel-title">Jadwal Mengajar</div><button class="btn-primary" id="btnTambahJadwal">+ Tambah Jadwal</button></div>
+        <table><thead><tr><th>Hari</th><th>Jam</th><th>Guru</th><th>Kelas</th><th>Mapel</th><th>Aksi</th></tr></thead>
+        <tbody id="tabelJadwal"><tr><td colspan="6" class="empty-state">Memuat data...</td></tr></tbody></table>
+      </div>
+
       <!-- ===== WHATSAPP CENTER ===== -->
       <div class="tab-panel" id="panel-whatsapp">
         <div class="panel-header"><div class="panel-title">WhatsApp Center</div></div>
@@ -573,6 +588,39 @@
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH MAPEL ===== -->
+<div class="modal-overlay" id="modalMapel">
+  <div class="modal-box">
+    <div class="modal-title">Tambah Mata Pelajaran</div>
+    <div class="msg-inline error" id="msgMapel"></div>
+    <div class="field-group"><label>Nama Mata Pelajaran</label><input type="text" id="inputNamaMapel"></div>
+    <div class="field-group"><label>Kode (opsional)</label><input type="text" id="inputKodeMapel"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="tutupModal('modalMapel')">Batal</button><button class="btn-primary" id="btnSimpanMapel">Simpan</button></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH JADWAL ===== -->
+<div class="modal-overlay" id="modalJadwal">
+  <div class="modal-box">
+    <div class="modal-title">Tambah Jadwal Mengajar</div>
+    <div class="msg-inline error" id="msgJadwal"></div>
+    <div class="field-group"><label>Guru</label><select id="inputJadwalGuru"><option value="">-- Pilih Guru --</option></select></div>
+    <div class="field-group"><label>Kelas</label><select id="inputJadwalKelas"><option value="">-- Pilih Kelas --</option></select></div>
+    <div class="field-group"><label>Mata Pelajaran</label><select id="inputJadwalMapel"><option value="">-- Pilih Mapel --</option></select></div>
+    <div class="field-group"><label>Hari</label>
+      <select id="inputJadwalHari">
+        <option value="Senin">Senin</option><option value="Selasa">Selasa</option><option value="Rabu">Rabu</option>
+        <option value="Kamis">Kamis</option><option value="Jumat">Jumat</option><option value="Sabtu">Sabtu</option>
+      </select>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="field-group"><label>Jam Mulai</label><input type="time" id="inputJadwalJamMulai"></div>
+      <div class="field-group"><label>Jam Selesai</label><input type="time" id="inputJadwalJamSelesai"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="tutupModal('modalJadwal')">Batal</button><button class="btn-primary" id="btnSimpanJadwal">Simpan</button></div>
   </div>
 </div>
 
@@ -1170,6 +1218,92 @@
   // Muat data WhatsApp Center & Pengaturan saat tab pertama kali dibuka
   document.querySelector('.nav-item[data-tab="whatsapp"]').addEventListener("click", muatWhatsAppCenter);
   document.querySelector('.nav-item[data-tab="pengaturan"]').addEventListener("click", muatPengaturan);
+
+  // ---------- MATA PELAJARAN ----------
+  async function muatMapel() {
+    const hasil = await callApi("getMapelList");
+    const tbody = document.getElementById("tabelMapel");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="2" class="empty-state">Belum ada mata pelajaran. Klik "+ Tambah Mapel" untuk mulai.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map(m => `<tr><td>${m.kode || '-'}</td><td>${m.nama_mapel}</td></tr>`).join("");
+  }
+
+  document.getElementById("btnTambahMapel").addEventListener("click", () => {
+    document.getElementById("msgMapel").classList.remove("show");
+    document.getElementById("inputNamaMapel").value = "";
+    document.getElementById("inputKodeMapel").value = "";
+    bukaModal("modalMapel");
+  });
+
+  document.getElementById("btnSimpanMapel").addEventListener("click", async () => {
+    const data = { nama_mapel: document.getElementById("inputNamaMapel").value.trim(), kode: document.getElementById("inputKodeMapel").value.trim() };
+    const hasil = await callApi("tambahMapel", { data: data });
+    const msgBox = document.getElementById("msgMapel");
+    if (hasil.success) { tutupModal("modalMapel"); muatMapel(); }
+    else { msgBox.textContent = hasil.message; msgBox.classList.add("show"); }
+  });
+
+  // ---------- JADWAL MENGAJAR ----------
+  async function muatJadwal() {
+    const hasil = await callApi("getJadwalList");
+    const tbody = document.getElementById("tabelJadwal");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada jadwal. Klik "+ Tambah Jadwal" untuk mulai.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map(j => `
+      <tr><td>${j.hari}</td><td>${j.jam_mulai}-${j.jam_selesai}</td><td>${j.nama_guru}</td><td>${j.nama_kelas}</td><td>${j.nama_mapel}</td>
+      <td><button class="link-action danger" onclick="hapusJadwalBaris('${j.jadwal_id}')">Hapus</button></td></tr>`).join("");
+  }
+
+  async function hapusJadwalBaris(id) {
+    if (!confirm("Hapus jadwal ini?")) return;
+    await callApi("hapusJadwal", { jadwal_id: id });
+    muatJadwal();
+  }
+
+  document.getElementById("btnTambahJadwal").addEventListener("click", async () => {
+    document.getElementById("msgJadwal").classList.remove("show");
+    document.getElementById("inputJadwalJamMulai").value = "";
+    document.getElementById("inputJadwalJamSelesai").value = "";
+
+    const [hasilGuru, hasilKelas, hasilMapel] = await Promise.all([
+      callApi("getGuruList"), callApi("getKelasList"), callApi("getMapelList")
+    ]);
+    if (hasilGuru.success) {
+      document.getElementById("inputJadwalGuru").innerHTML = '<option value="">-- Pilih Guru --</option>' +
+        hasilGuru.data.filter(g => g.is_active).map(g => `<option value="${g.guru_id}">${g.nama_lengkap}</option>`).join("");
+    }
+    if (hasilKelas.success) {
+      document.getElementById("inputJadwalKelas").innerHTML = '<option value="">-- Pilih Kelas --</option>' +
+        hasilKelas.data.map(k => `<option value="${k.kelas_id}">${k.nama_kelas}</option>`).join("");
+    }
+    if (hasilMapel.success) {
+      document.getElementById("inputJadwalMapel").innerHTML = '<option value="">-- Pilih Mapel --</option>' +
+        hasilMapel.data.map(m => `<option value="${m.mapel_id}">${m.nama_mapel}</option>`).join("");
+    }
+    bukaModal("modalJadwal");
+  });
+
+  document.getElementById("btnSimpanJadwal").addEventListener("click", async () => {
+    const data = {
+      guru_id: document.getElementById("inputJadwalGuru").value,
+      kelas_id: document.getElementById("inputJadwalKelas").value,
+      mapel_id: document.getElementById("inputJadwalMapel").value,
+      hari: document.getElementById("inputJadwalHari").value,
+      jam_mulai: document.getElementById("inputJadwalJamMulai").value,
+      jam_selesai: document.getElementById("inputJadwalJamSelesai").value
+    };
+    const hasil = await callApi("tambahJadwal", { data: data });
+    const msgBox = document.getElementById("msgJadwal");
+    if (hasil.success) { tutupModal("modalJadwal"); muatJadwal(); }
+    else { msgBox.textContent = hasil.message; msgBox.classList.add("show"); }
+  });
+
+  document.querySelector('.nav-item[data-tab="mapel"]').addEventListener("click", muatMapel);
+  document.querySelector('.nav-item[data-tab="jadwal"]').addEventListener("click", muatJadwal);
 
   // ---------- LOKASI ABSENSI (Peta OpenStreetMap via Leaflet) ----------
   let petaLokasi = null;
