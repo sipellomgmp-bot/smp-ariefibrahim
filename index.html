@@ -334,7 +334,7 @@
 
   .role-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 8px;
   }
 
@@ -409,6 +409,7 @@
     .hero-visual { min-height: 100px; margin-top: 20px; }
     .feature-row { grid-template-columns: repeat(2, 1fr); }
     .panel-form { padding: 32px 20px; }
+    .role-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
@@ -524,6 +525,10 @@
         <button type="button" class="role-btn" data-role="kepala_sekolah">
           <svg viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="1.8"><path d="M2 18h20M4 18V9l4 3 4-6 4 6 4-3v9"/></svg>
           <span>Kepala Sekolah</span>
+        </button>
+        <button type="button" class="role-btn" data-role="hale">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0f7d78" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>
+          <span>Petugas Absensi</span>
         </button>
       </div>
 
@@ -647,7 +652,8 @@
           "super_admin": "pages/dashboard-operator/index.html",
           "kepala_sekolah": "pages/dashboard-kepsek/index.html",
           "wali_kelas": "pages/dashboard-wali-kelas/index.html",
-          "guru": "pages/dashboard-guru/index.html"
+          "guru": "pages/dashboard-guru/index.html",
+          "hale": "pages/dashboard-hale/index.html"
         };
 
         setTimeout(() => {
