@@ -38,6 +38,20 @@
   .loc-warning { margin-top: 16px; background: rgba(179,38,30,0.15); border: 1px solid rgba(179,38,30,0.4); color: #ff9d96; padding: 10px 16px; border-radius: 10px; font-size: 12.5px; max-width: 380px; text-align: center; display: none; }
   .loc-warning.show { display: block; }
 
+  .offline-banner {
+    margin-top: 14px; background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.4);
+    color: var(--gold-light); padding: 10px 16px; border-radius: 10px; font-size: 12.5px;
+    max-width: 380px; text-align: center; display: none; align-items: center; gap: 8px; justify-content: center;
+  }
+  .offline-banner.show { display: flex; }
+  .offline-banner .dot-offline { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+
+  .mapel-info-banner {
+    margin-top: 14px; background: rgba(15,125,120,0.2); border: 1px solid rgba(15,125,120,0.5);
+    color: #7fd9d3; padding: 10px 16px; border-radius: 10px; font-size: 12.5px; max-width: 380px; text-align: center; display: none;
+  }
+  .mapel-info-banner.show { display: block; }
+
   /* ===== MODAL POPUP HASIL ===== */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12,26,51,0.6); align-items: center; justify-content: center; z-index: 100; padding: 16px; }
   .modal-overlay.show { display: flex; }
@@ -117,6 +131,8 @@
 
   <div class="status-line"><span class="status-dot"></span><span id="statusText">Meminta izin kamera...</span></div>
   <div class="loc-warning" id="locWarning">⚠ Izin lokasi ditolak. Absensi tidak bisa diproses tanpa akses lokasi GPS.</div>
+  <div class="offline-banner" id="offlineBanner"><span class="dot-offline"></span><span id="offlineText">Tidak ada koneksi internet — absensi tetap bisa dicatat, akan disinkronkan otomatis nanti.</span></div>
+  <div class="mapel-info-banner" id="mapelInfoBanner">Mode: Absensi Mata Pelajaran</div>
 </div>
 
 <!-- ===== MODAL HASIL SUKSES (Hadir/Terlambat/Pulang) ===== -->
@@ -196,6 +212,89 @@
   const token = sessionStorage.getItem("smp_token");
   if (!token) window.location.href = "../../index.html";
 
+  // ---------- Deteksi mode (gerbang biasa / mata pelajaran) dari URL ----------
+  const urlParams = new URLSearchParams(window.location.search);
+  const modeMapel = urlParams.get("mode") === "mapel";
+  const jadwalIdMapel = urlParams.get("jadwal_id");
+
+  if (modeMapel) {
+    document.getElementById("mapelInfoBanner").classList.add("show");
+    document.querySelector(".scan-title").textContent = "Scan QR — Absensi Mata Pelajaran";
+    document.querySelector(".scan-subtitle").textContent = "Setiap siswa yang di-scan akan tercatat hadir di sesi mata pelajaran ini.";
+  }
+
+  // ---------- Antrian offline (localStorage) ----------
+  const KUNCI_ANTRIAN = "smp_antrian_absensi_offline";
+
+  function ambilAntrian() {
+    try { return JSON.parse(localStorage.getItem(KUNCI_ANTRIAN)) || []; } catch (e) { return []; }
+  }
+  function simpanAntrian(daftar) {
+    localStorage.setItem(KUNCI_ANTRIAN, JSON.stringify(daftar));
+  }
+  function tambahKeAntrian(item) {
+    const daftar = ambilAntrian();
+    daftar.push(item);
+    simpanAntrian(daftar);
+    perbaruiIndikatorAntrian();
+  }
+  function perbaruiIndikatorAntrian() {
+    const jumlah = ambilAntrian().length;
+    const el = document.getElementById("offlineText");
+    if (jumlah > 0) {
+      el.textContent = jumlah + " absensi menunggu koneksi untuk disinkronkan.";
+    } else {
+      el.textContent = "Tidak ada koneksi internet — absensi tetap bisa dicatat, akan disinkronkan otomatis nanti.";
+    }
+  }
+
+  async function sinkronkanAntrian() {
+    const daftar = ambilAntrian();
+    if (daftar.length === 0) return;
+
+    document.getElementById("statusText").textContent = "Menyinkronkan " + daftar.length + " absensi offline...";
+    const sisaGagal = [];
+    let berhasilCount = 0;
+
+    for (const item of daftar) {
+      try {
+        const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(item.payload) });
+        const hasil = await res.json();
+        if (hasil.success) {
+          berhasilCount++;
+        } else {
+          sisaGagal.push(item);
+        }
+      } catch (e) {
+        sisaGagal.push(item); // masih gagal (mungkin koneksi belum stabil), coba lagi nanti
+        break; // hentikan loop kalau memang belum ada koneksi sama sekali
+      }
+    }
+
+    simpanAntrian(sisaGagal);
+    perbaruiIndikatorAntrian();
+
+    if (berhasilCount > 0) {
+      document.getElementById("statusText").textContent = berhasilCount + " absensi offline berhasil disinkronkan!";
+      setTimeout(() => { document.getElementById("statusText").textContent = "Siap memindai QR Code..."; }, 3000);
+    }
+  }
+
+  // ---------- Pantau status koneksi ----------
+  function perbaruiStatusKoneksi() {
+    if (navigator.onLine) {
+      document.getElementById("offlineBanner").classList.remove("show");
+      sinkronkanAntrian();
+    } else {
+      document.getElementById("offlineBanner").classList.add("show");
+      perbaruiIndikatorAntrian();
+    }
+  }
+  window.addEventListener("online", perbaruiStatusKoneksi);
+  window.addEventListener("offline", perbaruiStatusKoneksi);
+  perbaruiStatusKoneksi();
+  setInterval(() => { if (navigator.onLine) sinkronkanAntrian(); }, 20000); // jaga-jaga kalau event 'online' tidak terpicu
+
   let posisiSekarang = null;
   let sedangProses = false;
   let scannerAktif = null;
@@ -235,21 +334,28 @@
 
   async function onScanSukses(qrValue) {
     if (sedangProses) return; // cegah scan dobel saat masih proses
-    if (!posisiSekarang) {
+    if (!posisiSekarang && !modeMapel) {
       document.getElementById("statusText").textContent = "Menunggu lokasi GPS, coba scan lagi sebentar...";
       return;
     }
     sedangProses = true;
-    document.getElementById("statusText").textContent = "Memproses...";
 
+    // Susun payload sesuai mode
+    const payload = modeMapel
+      ? { action: "prosesAbsensiMapel", token: token, qr_value: qrValue, jadwal_id: jadwalIdMapel }
+      : { action: "prosesAbsensi", token: token, qr_value: qrValue, lat: posisiSekarang.lat, lng: posisiSekarang.lng };
+
+    // ---------- OFFLINE: simpan ke antrian, tampilkan konfirmasi sederhana ----------
+    if (!navigator.onLine) {
+      tambahKeAntrian({ payload: payload, waktu: new Date().toISOString() });
+      tampilkanModalOffline();
+      sedangProses = false;
+      return;
+    }
+
+    document.getElementById("statusText").textContent = "Memproses...";
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "prosesAbsensi", token: token, qr_value: qrValue,
-          lat: posisiSekarang.lat, lng: posisiSekarang.lng
-        })
-      });
+      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
       const hasil = await res.json();
 
       if (hasil.success) {
@@ -258,11 +364,41 @@
         tampilkanModalGagal(hasil.message);
       }
     } catch (e) {
-      tampilkanModalGagal("Tidak bisa terhubung ke server. Periksa koneksi internet.");
+      // Fetch gagal walau navigator.onLine bilang true (jaringan tidak stabil) — anggap offline
+      tambahKeAntrian({ payload: payload, waktu: new Date().toISOString() });
+      tampilkanModalOffline();
     } finally {
       sedangProses = false;
       document.getElementById("statusText").textContent = "Siap memindai QR Code...";
     }
+  }
+
+  function tampilkanModalOffline() {
+    document.getElementById("iconCircle").className = "modal-icon-circle sukses-hadir";
+    document.getElementById("iconSvg").innerHTML = '<path d="M20 6L9 17l-5-5"/>';
+    document.getElementById("statusTitle").className = "modal-status-title hadir";
+    document.getElementById("statusTitle").textContent = "Tersimpan Offline";
+    document.getElementById("statusDesc").textContent = "Tidak ada koneksi internet. Data sudah disimpan di perangkat ini dan akan otomatis disinkronkan begitu koneksi kembali tersedia.";
+
+    document.getElementById("fotoSiswa").style.display = "none";
+    document.getElementById("avatarFallback").style.display = "flex";
+    document.getElementById("avatarFallback").textContent = "⏳";
+    document.getElementById("namaSiswa").textContent = "Menunggu Sinkronisasi";
+    document.getElementById("idLabel").textContent = "Status";
+    document.getElementById("idSiswa").textContent = "Tersimpan di perangkat";
+    document.getElementById("baresKelasWrap").style.display = "none";
+    document.getElementById("jenisSiswa").textContent = "-";
+
+    const badgeEl = document.getElementById("badgeStatus");
+    badgeEl.className = "modal-badge-status hadir";
+    document.getElementById("badgeValue").textContent = "OFFLINE";
+
+    document.getElementById("detTanggal").textContent = new Date().toLocaleDateString("id-ID");
+    document.getElementById("detJam").textContent = new Date().toTimeString().slice(0,5) + " WIB";
+
+    document.getElementById("btnTutupHasil").className = "btn-tutup-modal hadir";
+    document.getElementById("modalHasil").classList.add("show");
+    setTimeout(() => { tutupModalHasil(); }, 3000);
   }
 
   function tampilkanModalHasil(data) {
@@ -331,4 +467,3 @@
 </script>
 </body>
 </html>
-
