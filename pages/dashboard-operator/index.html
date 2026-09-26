@@ -140,9 +140,6 @@
       linear-gradient(160deg, #2a4a86, #14284d 70%);
     display: flex; align-items: center; gap: 22px; padding: 24px 28px; margin-bottom: 22px;
   }
-  /* CATATAN: setelah upload foto gedung asli ke assets/img/gedung-sekolah.jpg, tambahkan:
-     background-image: linear-gradient(...), url('../../assets/img/gedung-sekolah.jpg');
-     background-size: cover; background-position: center; */
   .welcome-avatar {
     width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(145deg, var(--navy-light), var(--navy));
     border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center;
@@ -211,7 +208,7 @@
   .badge { padding: 3px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 600; }
   .badge.aktif { background: var(--green-bg); color: var(--green); }
   .badge.nonaktif { background: var(--red-bg); color: var(--red); }
-  .action-group { display: flex; gap: 10px; }
+  .action-group { display: flex; gap: 10px; flex-wrap: wrap; }
   .link-action { background: none; border: none; color: var(--navy); font-size: 12px; font-weight: 600; cursor: pointer; }
   .link-action.danger { color: var(--red); }
   .empty-state { text-align: center; padding: 36px 20px; color: var(--ink-soft); font-size: 13px; }
@@ -301,6 +298,7 @@
       <button class="nav-item" data-tab="programunggulan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Program Unggulan</button>
 
       <div class="nav-group-label">ABSENSI</div>
+      <button class="nav-item" data-tab="klasemen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Klasemen Absensi</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Absensi Siswa</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Absensi Guru</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Absensi Wali Murid</button>
@@ -310,7 +308,6 @@
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Siswa</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Guru</button>
 
-      <div class="nav-group-label">LAPORAN</div>
       <div class="nav-group-label">KOMUNIKASI</div>
       <button class="nav-item" data-tab="whatsapp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>WhatsApp Center</button>
 
@@ -454,8 +451,8 @@
       <!-- ===== MATA PELAJARAN ===== -->
       <div class="tab-panel" id="panel-mapel">
         <div class="panel-header"><div class="panel-title">Mata Pelajaran</div><button class="btn-primary" id="btnTambahMapel">+ Tambah Mapel</button></div>
-        <table><thead><tr><th>Kode</th><th>Nama Mata Pelajaran</th></tr></thead>
-        <tbody id="tabelMapel"><tr><td colspan="2" class="empty-state">Memuat data...</td></tr></tbody></table>
+        <table><thead><tr><th>Kode</th><th>Nama Mata Pelajaran</th><th>Aksi</th></tr></thead>
+        <tbody id="tabelMapel"><tr><td colspan="3" class="empty-state">Memuat data...</td></tr></tbody></table>
       </div>
 
       <!-- ===== JADWAL MENGAJAR ===== -->
@@ -463,6 +460,13 @@
         <div class="panel-header"><div class="panel-title">Jadwal Mengajar</div><button class="btn-primary" id="btnTambahJadwal">+ Tambah Jadwal</button></div>
         <table><thead><tr><th>Hari</th><th>Jam</th><th>Guru</th><th>Kelas</th><th>Mapel</th><th>Aksi</th></tr></thead>
         <tbody id="tabelJadwal"><tr><td colspan="6" class="empty-state">Memuat data...</td></tr></tbody></table>
+      </div>
+
+      <!-- ===== KLASEMEN ABSENSI ===== -->
+      <div class="tab-panel" id="panel-klasemen">
+        <div class="panel-header"><div class="panel-title">Klasemen Absensi Siswa</div></div>
+        <table><thead><tr><th>#</th><th>Nama Siswa</th><th>Kelas</th><th>Hadir</th><th>Terlambat</th><th>% Kehadiran</th></tr></thead>
+        <tbody id="tabelKlasemen"><tr><td colspan="6" class="empty-state">Memuat data...</td></tr></tbody></table>
       </div>
 
       <!-- ===== WHATSAPP CENTER ===== -->
@@ -515,13 +519,22 @@
 
         <div class="panel-box" style="margin-bottom:16px;">
           <p style="font-size:13px; color:var(--ink-soft); margin-bottom:14px;">
-            Klik peta atau tombol di bawah untuk menandai titik gerbang sekolah. Absensi QR siswa/guru
-            hanya berhasil jika di-scan dalam radius yang ditentukan dari titik ini.
+            Klik peta, gunakan lokasi HP, ATAU ketik koordinat manual di bawah untuk menandai titik gerbang sekolah.
           </p>
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
             <button class="btn-primary" id="btnLokasiHpSaya"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6-7-12a7 7 0 1114 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Gunakan Lokasi HP Saya Sekarang</button>
           </div>
           <div id="petaLokasi" style="width:100%; height:360px; border-radius:12px; border:1px solid var(--border-soft);"></div>
+
+          <div style="background:var(--cream); border:1px solid var(--border-soft); border-radius:10px; padding:14px; margin-top:16px;">
+            <div style="font-size:12.5px; font-weight:700; color:var(--navy-dark); margin-bottom:10px;">Atau Masukkan Koordinat Manual</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end;">
+              <div class="field-group" style="margin-bottom:0;"><label>Latitude</label><input type="text" id="inputLatManual" placeholder="-7.123456"></div>
+              <div class="field-group" style="margin-bottom:0;"><label>Longitude</label><input type="text" id="inputLngManual" placeholder="112.123456"></div>
+              <button class="btn-secondary" id="btnPakaiManual" style="flex:none; padding:10px 16px;">Pakai Titik Ini</button>
+            </div>
+            <div style="font-size:10.5px; color:var(--ink-soft); margin-top:8px;">Tips: buka Google Maps di HP/laptop lain, cari lokasi sekolah, klik kanan titiknya, salin angka koordinat yang muncul, tempel di sini.</div>
+          </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px;">
             <div class="field-group" style="margin-bottom:0;"><label>Nama Titik</label><input type="text" id="inputNamaLokasi" value="Gerbang Utama"></div>
@@ -634,6 +647,7 @@
         <option value="guru">Guru</option>
         <option value="wali_kelas">Wali Kelas</option>
         <option value="kepala_sekolah">Kepala Sekolah</option>
+        <option value="hale">Petugas Absensi (Hale)</option>
       </select>
     </div>
     <div class="field-group" id="groupRefGuru"><label>Pilih Data Guru</label><select id="inputRefGuru"><option value="">-- Pilih Guru --</option></select></div>
@@ -913,12 +927,20 @@
           <button class="link-action" onclick="bukaEditSiswa('${s.siswa_id}')">Edit</button>
           <button class="link-action" onclick="bukaModalQR('siswa','${s.siswa_id}')">Lihat QR</button>
           <button class="link-action ${s.is_active ? 'danger' : ''}" onclick="toggleStatusSiswa('${s.siswa_id}', ${!s.is_active})">${s.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button>
+          <button class="link-action danger" onclick="hapusSiswaBaris('${s.siswa_id}')">Hapus</button>
         </td>
       </tr>`).join("");
   }
 
   async function toggleStatusSiswa(id, statusBaru) {
     await callApi("ubahStatusSiswa", { siswa_id: id, is_active: statusBaru });
+    muatSiswa(); muatRingkasan();
+  }
+
+  async function hapusSiswaBaris(id) {
+    if (!confirm("Hapus PERMANEN data siswa ini? Hanya bisa dihapus kalau belum pernah absen sama sekali.")) return;
+    const hasil = await callApi("hapusSiswa", { siswa_id: id });
+    if (!hasil.success) { alert(hasil.message); return; }
     muatSiswa(); muatRingkasan();
   }
 
@@ -1018,12 +1040,20 @@
           <button class="link-action" onclick="bukaEditGuru('${g.guru_id}')">Edit</button>
           <button class="link-action" onclick="bukaModalQR('guru','${g.guru_id}')">Lihat QR</button>
           <button class="link-action ${g.is_active ? 'danger' : ''}" onclick="toggleStatusGuru('${g.guru_id}', ${!g.is_active})">${g.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button>
+          <button class="link-action danger" onclick="hapusGuruBaris('${g.guru_id}')">Hapus</button>
         </td>
       </tr>`).join("");
   }
 
   async function toggleStatusGuru(id, statusBaru) {
     await callApi("ubahStatusGuru", { guru_id: id, is_active: statusBaru });
+    muatGuru(); muatRingkasan();
+  }
+
+  async function hapusGuruBaris(id) {
+    if (!confirm("Hapus PERMANEN data guru ini? Hanya bisa dihapus kalau belum pernah absen, belum punya jadwal, dan bukan wali kelas aktif.")) return;
+    const hasil = await callApi("hapusGuru", { guru_id: id });
+    if (!hasil.success) { alert(hasil.message); return; }
     muatGuru(); muatRingkasan();
   }
 
@@ -1281,10 +1311,17 @@
     const hasil = await callApi("getMapelList");
     const tbody = document.getElementById("tabelMapel");
     if (!hasil.success || hasil.data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="2" class="empty-state">Belum ada mata pelajaran. Klik "+ Tambah Mapel" untuk mulai.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Belum ada mata pelajaran. Klik "+ Tambah Mapel" untuk mulai.</td></tr>';
       return;
     }
-    tbody.innerHTML = hasil.data.map(m => `<tr><td>${m.kode || '-'}</td><td>${m.nama_mapel}</td></tr>`).join("");
+    tbody.innerHTML = hasil.data.map(m => `<tr><td>${m.kode || '-'}</td><td>${m.nama_mapel}</td><td><button class="link-action danger" onclick="hapusMapelBaris('${m.mapel_id}')">Hapus</button></td></tr>`).join("");
+  }
+
+  async function hapusMapelBaris(id) {
+    if (!confirm("Hapus mata pelajaran ini?")) return;
+    const hasil = await callApi("hapusMapel", { mapel_id: id });
+    if (!hasil.success) { alert(hasil.message); return; }
+    muatMapel();
   }
 
   document.getElementById("btnTambahMapel").addEventListener("click", () => {
@@ -1362,6 +1399,20 @@
   document.querySelector('.nav-item[data-tab="mapel"]').addEventListener("click", muatMapel);
   document.querySelector('.nav-item[data-tab="jadwal"]').addEventListener("click", muatJadwal);
 
+  // ---------- KLASEMEN ABSENSI ----------
+  async function muatKlasemen() {
+    const hasil = await callApi("getKlasemenAbsensiSiswa");
+    const tbody = document.getElementById("tabelKlasemen");
+    if (!hasil.success || hasil.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada data absensi untuk dihitung klasemennya.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = hasil.data.map((r, i) => `
+      <tr><td>${i+1}</td><td>${r.nama_lengkap}</td><td>${r.nama_kelas}</td><td>${r.hadir}</td><td>${r.terlambat}</td>
+      <td><span class="badge aktif">${r.persentase_hadir}%</span></td></tr>`).join("");
+  }
+  document.querySelector('.nav-item[data-tab="klasemen"]').addEventListener("click", muatKlasemen);
+
   // ---------- LOKASI ABSENSI (Peta OpenStreetMap via Leaflet) ----------
   let petaLokasi = null;
   let markerLokasi = null;
@@ -1393,6 +1444,8 @@
   function pindahkanMarker(lat, lng) {
     koordinatTerpilih = { lat, lng };
     document.getElementById("labelKoordinat").textContent = lat.toFixed(6) + ", " + lng.toFixed(6);
+    document.getElementById("inputLatManual").value = lat.toFixed(6);
+    document.getElementById("inputLngManual").value = lng.toFixed(6);
 
     if (markerLokasi) {
       markerLokasi.setLatLng([lat, lng]);
@@ -1402,6 +1455,8 @@
         const pos = e.target.getLatLng();
         koordinatTerpilih = { lat: pos.lat, lng: pos.lng };
         document.getElementById("labelKoordinat").textContent = pos.lat.toFixed(6) + ", " + pos.lng.toFixed(6);
+        document.getElementById("inputLatManual").value = pos.lat.toFixed(6);
+        document.getElementById("inputLngManual").value = pos.lng.toFixed(6);
         updateLingkaranRadius();
       });
     }
@@ -1432,18 +1487,33 @@
         document.getElementById("btnLokasiHpSaya").innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6-7-12a7 7 0 1114 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Gunakan Lokasi HP Saya Sekarang';
       },
       () => {
-        alert("Izin lokasi ditolak. Aktifkan izin lokasi di browser, lalu coba lagi.");
+        alert("Izin lokasi ditolak. Aktifkan izin lokasi di browser, atau gunakan input koordinat manual di bawah peta.");
         document.getElementById("btnLokasiHpSaya").textContent = "Gunakan Lokasi HP Saya Sekarang";
       },
       { enableHighAccuracy: true }
     );
   });
 
+  // ---------- Input koordinat manual ----------
+  document.getElementById("btnPakaiManual").addEventListener("click", () => {
+    const lat = parseFloat(document.getElementById("inputLatManual").value);
+    const lng = parseFloat(document.getElementById("inputLngManual").value);
+    if (isNaN(lat) || isNaN(lng)) {
+      alert("Isi Latitude dan Longitude dengan angka yang valid. Contoh: -7.123456");
+      return;
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      alert("Nilai koordinat di luar rentang wajar. Cek kembali angkanya.");
+      return;
+    }
+    initPeta(lat, lng);
+  });
+
   document.getElementById("btnSimpanLokasi").addEventListener("click", async () => {
     const msgBox = document.getElementById("msgLokasi");
     msgBox.className = "msg-inline";
     if (!koordinatTerpilih) {
-      msgBox.textContent = "Pilih titik lokasi di peta dulu (klik peta atau gunakan lokasi HP).";
+      msgBox.textContent = "Pilih titik lokasi dulu (klik peta, pakai lokasi HP, atau isi koordinat manual).";
       msgBox.classList.add("error", "show");
       return;
     }
@@ -1474,7 +1544,7 @@
       // Belum ada lokasi tersimpan — mulai dari peta Indonesia secara umum
       initPeta(-2.5, 118);
       koordinatTerpilih = null;
-      document.getElementById("labelKoordinat").textContent = "Belum dipilih — klik 'Gunakan Lokasi HP Saya' atau klik peta";
+      document.getElementById("labelKoordinat").textContent = "Belum dipilih — klik 'Gunakan Lokasi HP Saya', klik peta, atau isi koordinat manual";
     }
   }
 
@@ -1492,10 +1562,6 @@
   });
 
   // ---------- PENGGUNA ----------
-  if (user.role === "super_admin") {
-    document.getElementById("inputRolePengguna").innerHTML += '<option value="operator">Operator</option><option value="super_admin">Super Admin</option>';
-  }
-
   async function muatPengguna() {
     const hasil = await callApi("getPenggunaList");
     const tbody = document.getElementById("tabelPengguna");
@@ -1503,13 +1569,17 @@
       tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Belum ada pengguna.</td></tr>';
       return;
     }
-    const labelRoleMap = { super_admin: "Super Admin", operator: "Operator", guru: "Guru", wali_kelas: "Wali Kelas", kepala_sekolah: "Kepala Sekolah" };
+    const labelRoleMap = { super_admin: "Super Admin", operator: "Operator", guru: "Guru", wali_kelas: "Wali Kelas", kepala_sekolah: "Kepala Sekolah", hale: "Petugas Absensi (Hale)" };
     tbody.innerHTML = hasil.data.map(u => `
       <tr>
         <td>${u.username}</td><td>${u.nama_lengkap}</td><td>${labelRoleMap[u.role] || u.role}</td>
         <td><span class="badge ${u.is_active ? 'aktif' : 'nonaktif'}">${u.is_active ? 'Aktif' : 'Nonaktif'}</span></td>
         <td class="action-group"><button class="link-action ${u.is_active ? 'danger' : ''}" onclick="toggleStatusPengguna('${u.user_id}', ${!u.is_active})">${u.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button></td>
       </tr>`).join("");
+  }
+
+  if (user.role === "super_admin") {
+    document.getElementById("inputRolePengguna").innerHTML += '<option value="operator">Operator</option><option value="super_admin">Super Admin</option>';
   }
 
   async function toggleStatusPengguna(id, statusBaru) {
