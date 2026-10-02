@@ -183,14 +183,6 @@
   .log-action { color: var(--ink-soft); }
   .log-time { color: #9aa4bd; font-size: 10.5px; white-space: nowrap; }
 
-  .rank-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f1efe9; font-size: 12.5px; }
-  .rank-item:last-child { border-bottom: none; }
-  .rank-num { width: 22px; height: 22px; border-radius: 50%; background: var(--cream); color: var(--navy-dark); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .rank-num.top1 { background: var(--gold); color: #fff; }
-  .rank-name { flex: 1; }
-  .rank-sub { color: var(--ink-soft); font-size: 10.5px; }
-  .rank-value { font-weight: 700; color: var(--green); font-size: 12px; }
-
   .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .quick-btn {
     background: var(--cream); border: 1px solid var(--border-soft); border-radius: 10px; padding: 14px 8px;
@@ -234,8 +226,8 @@
   .modal-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; color: var(--navy-dark); margin-bottom: 18px; }
   .field-group { margin-bottom: 14px; }
   .field-group label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
-  .field-group input, .field-group select, .field-group textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-soft); border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; }
-  .field-group input:focus, .field-group select:focus, .field-group textarea:focus { outline: none; border-color: var(--navy); }
+  .field-group input, .field-group select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-soft); border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; }
+  .field-group input:focus, .field-group select:focus { outline: none; border-color: var(--navy); }
   .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
   .btn-secondary { flex: 1; background: #fff; border: 1.5px solid var(--border-soft); padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink-soft); }
   .modal-actions .btn-primary { flex: 1; justify-content: center; }
@@ -295,11 +287,11 @@
       <div class="nav-group-label">MASTER DATA</div>
       <button class="nav-item" data-tab="pengguna"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0116 0v2"/></svg>Pengguna</button>
       <button class="nav-item" data-tab="lokasi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6-7-12a7 7 0 1114 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Lokasi Absensi</button>
-      <button class="nav-item" data-tab="sekolah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14"/></svg>Sekolah</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14"/></svg>Sekolah</button>
       <button class="nav-item" data-tab="siswa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Siswa</button>
       <button class="nav-item" data-tab="guru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Guru</button>
       <button class="nav-item" data-tab="kelas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Kelas</button>
-      <button class="nav-item" data-tab="walikelas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg>Wali Kelas</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg>Wali Kelas</button>
       <button class="nav-item" data-tab="mapel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>Mata Pelajaran</button>
       <button class="nav-item" data-tab="jadwal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>Jadwal Mengajar</button>
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Ekstrakurikuler</button>
@@ -313,8 +305,8 @@
       <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Acara Sekolah</button>
 
       <div class="nav-group-label">QR CODE</div>
-      <button class="nav-item" data-tab="siswa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Siswa</button>
-      <button class="nav-item" data-tab="guru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Guru</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Siswa</button>
+      <button class="nav-item" data-tab="segerahadir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/></svg>QR Guru</button>
 
       <div class="nav-group-label">KOMUNIKASI</div>
       <button class="nav-item" data-tab="whatsapp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>WhatsApp Center</button>
@@ -394,32 +386,41 @@
           <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="stat-label">Total Siswa</div><div class="stat-value" id="sumSiswa">-</div></div></div>
           <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div><div class="stat-label">Total Guru</div><div class="stat-value" id="sumGuru">-</div></div></div>
           <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="stat-label">Total Kelas</div><div class="stat-value" id="sumKelas">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div><div class="stat-label">Hadir Hari Ini</div><div class="stat-value" id="sumHadirHariIni">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><div><div class="stat-label">Ekstrakurikuler</div><div class="stat-value" id="sumEkskul">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg></div><div><div class="stat-label">Program Unggulan</div><div class="stat-value" id="sumProgram">-</div></div></div>
         </div>
 
         <div class="grid-2col">
           <div class="panel-box">
-            <div class="panel-box-title">Ringkasan Absensi Hari Ini</div>
-            <div id="ringkasanAbsensiHariIni"><div class="empty-state">Memuat...</div></div>
+            <div class="panel-box-title">Grafik Kehadiran Siswa</div>
+            <div class="placeholder-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18M7 16l4-6 4 3 5-8"/></svg>
+              <strong>Grafik belum tersedia</strong>
+              Akan otomatis terisi setelah fitur Absensi QR (roadmap Langkah 3-4) aktif dan siswa mulai melakukan scan harian.
+            </div>
           </div>
           <div class="panel-box">
-            <div class="panel-box-title">Pesan WhatsApp Terbaru</div>
-            <div id="notifikasiTerbaru"><div class="empty-state">Memuat...</div></div>
+            <div class="panel-box-title">Notifikasi &amp; Pesan</div>
+            <div class="placeholder-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <strong>Belum ada notifikasi</strong>
+              Akan terisi setelah WhatsApp Notification Center (roadmap Langkah 6) aktif.
+            </div>
           </div>
         </div>
 
         <div class="grid-3col">
           <div class="panel-box">
+            <div class="panel-box-title">Rekap Absensi per Kelas</div>
+            <div class="placeholder-box"><strong>Segera Hadir</strong>Menunggu data absensi harian.</div>
+          </div>
+          <div class="panel-box">
             <div class="panel-box-title">Top 5 Siswa Paling Rajin</div>
-            <div id="top5SiswaRajin"><div class="empty-state">Memuat...</div></div>
+            <div class="placeholder-box"><strong>Segera Hadir</strong>Menunggu data absensi harian.</div>
           </div>
           <div class="panel-box">
             <div class="panel-box-title">Guru Paling Rajin</div>
-            <div id="top5GuruRajin"><div class="empty-state">Memuat...</div></div>
-          </div>
-          <div class="panel-box">
-            <div class="panel-box-title">Guru Sering Tidak Masuk</div>
-            <div id="top5GuruTidakMasuk"><div class="empty-state">Memuat...</div></div>
+            <div class="placeholder-box"><strong>Segera Hadir</strong>Menunggu data absensi harian.</div>
           </div>
         </div>
 
@@ -445,35 +446,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- ===== SEKOLAH ===== -->
-      <div class="tab-panel" id="panel-sekolah">
-        <div class="panel-header"><div class="panel-title">Data Sekolah</div></div>
-        <div class="panel-box">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-            <div class="field-group"><label>Nama Sekolah</label><input type="text" id="skNamaSekolah"></div>
-            <div class="field-group"><label>NPSN</label><input type="text" id="skNpsn"></div>
-            <div class="field-group" style="grid-column:1/-1;"><label>Alamat</label><input type="text" id="skAlamat"></div>
-            <div class="field-group"><label>Nama Kepala Sekolah</label><input type="text" id="skKepsekNama"></div>
-            <div class="field-group"><label>NIP Kepala Sekolah</label><input type="text" id="skKepsekNip"></div>
-            <div class="field-group"><label>Telepon</label><input type="text" id="skTelepon"></div>
-            <div class="field-group"><label>Email</label><input type="text" id="skEmail"></div>
-            <div class="field-group"><label>Tahun Ajaran Aktif</label><input type="text" id="skTahunAjaran" placeholder="2026/2027"></div>
-            <div class="field-group"><label>Semester Aktif</label>
-              <select id="skSemester"><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select>
-            </div>
-          </div>
-          <button class="btn-primary" id="btnSimpanSekolah">Simpan Data Sekolah</button>
-          <div class="msg-inline" id="msgSekolah" style="margin-top:12px;"></div>
-        </div>
-      </div>
-
-      <!-- ===== WALI KELAS (ringkasan, klik Ubah untuk edit lewat modal Kelas) ===== -->
-      <div class="tab-panel" id="panel-walikelas">
-        <div class="panel-header"><div class="panel-title">Penugasan Wali Kelas</div></div>
-        <table><thead><tr><th>Kelas</th><th>Tingkat</th><th>Wali Kelas Saat Ini</th><th>Aksi</th></tr></thead>
-        <tbody id="tabelWaliKelas"><tr><td colspan="4" class="empty-state">Memuat data...</td></tr></tbody></table>
       </div>
 
       <!-- ===== MATA PELAJARAN ===== -->
@@ -901,72 +873,9 @@
       document.getElementById("sumSiswa").textContent = hasil.data.total_siswa;
       document.getElementById("sumGuru").textContent = hasil.data.total_guru;
       document.getElementById("sumKelas").textContent = hasil.data.total_kelas;
-      document.getElementById("sumHadirHariIni").textContent = hasil.data.hadir_hari_ini;
+      document.getElementById("sumEkskul").textContent = hasil.data.total_ekstrakurikuler;
+      document.getElementById("sumProgram").textContent = hasil.data.total_program;
     }
-  }
-
-  async function muatRingkasanAbsensiDashboard() {
-    const hasil = await callApi("getRingkasanAbsensiHariIni");
-    const container = document.getElementById("ringkasanAbsensiHariIni");
-    if (!hasil.success) {
-      container.innerHTML = `<div class="empty-state">${hasil.message}</div>`;
-      return;
-    }
-    const d = hasil.data;
-    container.innerHTML = `
-      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
-        <div style="background:var(--green-bg); border-radius:10px; padding:12px;"><div style="font-size:10.5px; color:var(--ink-soft);">Siswa Hadir</div><div style="font-family:'Playfair Display',serif; font-weight:700; font-size:20px; color:var(--green);">${d.siswa_hadir}</div></div>
-        <div style="background:var(--orange-bg); border-radius:10px; padding:12px;"><div style="font-size:10.5px; color:var(--ink-soft);">Siswa Terlambat</div><div style="font-family:'Playfair Display',serif; font-weight:700; font-size:20px; color:var(--orange);">${d.siswa_terlambat}</div></div>
-        <div style="background:var(--cream); border-radius:10px; padding:12px;"><div style="font-size:10.5px; color:var(--ink-soft);">Belum Absen</div><div style="font-family:'Playfair Display',serif; font-weight:700; font-size:20px; color:var(--navy-dark);">${d.siswa_belum_absen}</div></div>
-        <div style="background:var(--blue-bg); border-radius:10px; padding:12px;"><div style="font-size:10.5px; color:var(--ink-soft);">Guru Hadir</div><div style="font-family:'Playfair Display',serif; font-weight:700; font-size:20px; color:var(--blue);">${d.guru_hadir}</div></div>
-      </div>`;
-  }
-
-  async function muatTop5SiswaRajin() {
-    const hasil = await callApi("getKlasemenAbsensiSiswa");
-    const container = document.getElementById("top5SiswaRajin");
-    if (!hasil.success || hasil.data.length === 0) { container.innerHTML = '<div class="empty-state">Belum ada data absensi.</div>'; return; }
-    const top5 = hasil.data.slice(0, 5);
-    container.innerHTML = top5.map((r, i) => `
-      <div class="rank-item"><div class="rank-num ${i===0?'top1':''}">${i+1}</div>
-      <div class="rank-name">${r.nama_lengkap}<div class="rank-sub">${r.nama_kelas}</div></div>
-      <div class="rank-value">${r.persentase_hadir}%</div></div>`).join("");
-  }
-
-  async function muatTop5GuruRajin() {
-    const hasil = await callApi("getKlasemenGuruRajin", { periode: "bulan" });
-    const container = document.getElementById("top5GuruRajin");
-    if (!hasil.success || hasil.data.length === 0) { container.innerHTML = '<div class="empty-state">Belum ada data bulan ini.</div>'; return; }
-    const top5 = hasil.data.slice(0, 5);
-    container.innerHTML = top5.map((r, i) => `
-      <div class="rank-item"><div class="rank-num ${i===0?'top1':''}">${i+1}</div>
-      <div class="rank-name">${r.nama_lengkap}<div class="rank-sub">${r.jumlah_terisi} sesi terisi</div></div>
-      <div class="rank-value">${r.persentase_rajin}%</div></div>`).join("");
-  }
-
-  async function muatTop5GuruTidakMasuk() {
-    const hasil = await callApi("getKlasemenGuruTidakMasuk", { periode: "bulan" });
-    const container = document.getElementById("top5GuruTidakMasuk");
-    if (!hasil.success || hasil.data.length === 0) { container.innerHTML = '<div class="empty-state">Tidak ada catatan kelas kosong bulan ini. 👍</div>'; return; }
-    const top5 = hasil.data.slice(0, 5);
-    container.innerHTML = top5.map((r, i) => `
-      <div class="rank-item"><div class="rank-num" style="background:var(--red-bg); color:var(--red);">${i+1}</div>
-      <div class="rank-name">${r.nama_lengkap}</div>
-      <div class="rank-value" style="color:var(--red);">${r.jumlah_kosong}x</div></div>`).join("");
-  }
-
-  async function muatNotifikasiTerbaruDashboard() {
-    const hasil = await callApi("getWhatsAppLogTerbaru", { jumlah: 5 });
-    const container = document.getElementById("notifikasiTerbaru");
-    if (!hasil.success || hasil.data.length === 0) { container.innerHTML = '<div class="empty-state">Belum ada pesan terkirim.</div>'; return; }
-    container.innerHTML = hasil.data.map(l => {
-      const waktu = new Date(l.dikirim_pada);
-      const jamStr = String(waktu.getHours()).padStart(2,"0") + ":" + String(waktu.getMinutes()).padStart(2,"0");
-      const warna = l.status === "SENT" ? "var(--green)" : (l.status === "QUEUED" ? "var(--ink-soft)" : "var(--red)");
-      return `<div class="log-item"><div class="log-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-        <div class="log-text"><strong>${l.kategori}</strong><br><span class="log-action" style="color:${warna};">${l.status}</span></div>
-        <div class="log-time">${jamStr}</div></div>`;
-    }).join("");
   }
 
   async function muatProgramUnggulan() {
@@ -1251,18 +1160,8 @@
     tbody.innerHTML = hasil.data.map(k => `
       <tr>
         <td>${k.nama_kelas}</td><td>${k.tingkat}</td><td>${k.nama_wali_kelas}</td><td>${k.tahun_ajaran}</td>
-        <td class="action-group">
-          <button class="link-action" onclick="bukaEditKelas('${k.kelas_id}')">Edit</button>
-          <button class="link-action danger" onclick="hapusKelasBaris('${k.kelas_id}')">Hapus</button>
-        </td>
+        <td class="action-group"><button class="link-action" onclick="bukaEditKelas('${k.kelas_id}')">Edit</button></td>
       </tr>`).join("");
-  }
-
-  async function hapusKelasBaris(id) {
-    if (!confirm("Hapus kelas ini secara permanen? Hanya bisa dihapus kalau tidak ada siswa/jadwal aktif di kelas ini.")) return;
-    const hasil = await callApi("hapusKelas", { kelas_id: id });
-    if (!hasil.success) { alert(hasil.message); return; }
-    muatKelas(); muatRingkasan();
   }
 
   async function muatDropdownGuru(selectedValue) {
@@ -1307,67 +1206,8 @@
       ? await callApi("editKelas", { kelas_id: editId, data: data })
       : await callApi("tambahKelas", { data: data });
     const msgBox = document.getElementById("msgKelas");
-    if (hasil.success) { tutupModal("modalKelas"); muatKelas(); muatWaliKelas(); muatRingkasan(); }
+    if (hasil.success) { tutupModal("modalKelas"); muatKelas(); muatRingkasan(); }
     else { msgBox.textContent = hasil.message; msgBox.classList.add("show"); }
-  });
-
-  // ---------- WALI KELAS ----------
-  async function muatWaliKelas() {
-    const hasil = await callApi("getKelasList");
-    const tbody = document.getElementById("tabelWaliKelas");
-    if (!hasil.success || hasil.data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Belum ada data kelas.</td></tr>';
-      return;
-    }
-    cacheKelas = hasil.data;
-    tbody.innerHTML = hasil.data.map(k => `
-      <tr>
-        <td>${k.nama_kelas}</td><td>${k.tingkat}</td>
-        <td>${k.nama_wali_kelas === '-' ? '<span style="color:var(--red);">Belum ditugaskan</span>' : k.nama_wali_kelas}</td>
-        <td><button class="link-action" onclick="pindahTab('kelas'); bukaEditKelas('${k.kelas_id}');">Ubah</button></td>
-      </tr>`).join("");
-  }
-  document.querySelector('.nav-item[data-tab="walikelas"]').addEventListener("click", muatWaliKelas);
-
-  // ---------- SEKOLAH ----------
-  async function muatDataSekolah() {
-    const hasil = await callApi("getDataSekolah");
-    if (!hasil.success) return;
-    const d = hasil.data || {};
-    document.getElementById("skNamaSekolah").value = d.nama_sekolah || "";
-    document.getElementById("skNpsn").value = d.npsn || "";
-    document.getElementById("skAlamat").value = d.alamat || "";
-    document.getElementById("skKepsekNama").value = d.kepala_sekolah_nama || "";
-    document.getElementById("skKepsekNip").value = d.kepala_sekolah_nip || "";
-    document.getElementById("skTelepon").value = d.telepon || "";
-    document.getElementById("skEmail").value = d.email || "";
-    document.getElementById("skTahunAjaran").value = d.tahun_ajaran_aktif || "";
-    document.getElementById("skSemester").value = d.semester_aktif || "Ganjil";
-  }
-  document.querySelector('.nav-item[data-tab="sekolah"]').addEventListener("click", muatDataSekolah);
-
-  document.getElementById("btnSimpanSekolah").addEventListener("click", async () => {
-    const data = {
-      nama_sekolah: document.getElementById("skNamaSekolah").value.trim(),
-      npsn: document.getElementById("skNpsn").value.trim(),
-      alamat: document.getElementById("skAlamat").value.trim(),
-      kepala_sekolah_nama: document.getElementById("skKepsekNama").value.trim(),
-      kepala_sekolah_nip: document.getElementById("skKepsekNip").value.trim(),
-      telepon: document.getElementById("skTelepon").value.trim(),
-      email: document.getElementById("skEmail").value.trim(),
-      tahun_ajaran_aktif: document.getElementById("skTahunAjaran").value.trim(),
-      semester_aktif: document.getElementById("skSemester").value
-    };
-    const hasil = await callApi("updateDataSekolah", { data: data });
-    const msgBox = document.getElementById("msgSekolah");
-    msgBox.className = "msg-inline";
-    if (hasil.success) {
-      msgBox.textContent = "Data sekolah berhasil disimpan.";
-      msgBox.classList.add("success", "show");
-    } else {
-      msgBox.textContent = hasil.message;
-      msgBox.classList.add("error", "show");
-    }
   });
 
   async function muatActivityLogPenuh() {
@@ -1392,11 +1232,6 @@
   muatActivityLogPenuh();
   muatProgramUnggulan();
   muatPengguna();
-  muatRingkasanAbsensiDashboard();
-  muatTop5SiswaRajin();
-  muatTop5GuruRajin();
-  muatTop5GuruTidakMasuk();
-  muatNotifikasiTerbaruDashboard();
 
   // ---------- WHATSAPP CENTER ----------
   async function muatWhatsAppCenter() {
@@ -1505,20 +1340,34 @@
   });
 
   // ---------- JADWAL MENGAJAR ----------
+  let cacheJadwal = [];
   async function muatJadwal() {
     const hasil = await callApi("getJadwalList");
     const tbody = document.getElementById("tabelJadwal");
-    if (!hasil.success) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color:var(--red);">Gagal memuat: ${hasil.message}</td></tr>`;
-      return;
-    }
-    if (hasil.data.length === 0) {
+    cacheJadwal = hasil.success ? hasil.data : [];
+    if (!hasil.success || hasil.data.length === 0) {
       tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada jadwal. Klik "+ Tambah Jadwal" untuk mulai.</td></tr>';
       return;
     }
     tbody.innerHTML = hasil.data.map(j => `
       <tr><td>${j.hari}</td><td>${j.jam_mulai}-${j.jam_selesai}</td><td>${j.nama_guru}</td><td>${j.nama_kelas}</td><td>${j.nama_mapel}</td>
-      <td><button class="link-action danger" onclick="hapusJadwalBaris('${j.jadwal_id}')">Hapus</button></td></tr>`).join("");
+      <td class="action-group">
+        <button class="link-action" onclick="bukaModalQRJadwal('${j.jadwal_id}')">Lihat QR</button>
+        <button class="link-action danger" onclick="hapusJadwalBaris('${j.jadwal_id}')">Hapus</button>
+      </td></tr>`).join("");
+  }
+
+  function bukaModalQRJadwal(jadwalId) {
+    const j = cacheJadwal.find(x => x.jadwal_id === jadwalId);
+    if (!j) return;
+    const urlQR = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(jadwalId);
+    document.getElementById('qrNamaTampil').textContent = j.nama_kelas + ' · ' + j.nama_mapel;
+    document.getElementById('qrIdTampil').textContent = j.hari + ', ' + j.jam_mulai + '-' + j.jam_selesai;
+    document.getElementById('qrSubTampil').textContent = 'Guru: ' + j.nama_guru;
+    document.getElementById('qrValueTampil').textContent = jadwalId;
+    document.getElementById('qrImgTampil').src = urlQR;
+    document.getElementById('btnCetakQR').onclick = () => cetakQR(urlQR, j.nama_kelas + ' - ' + j.nama_mapel, 'Jadwal', j.hari + ' ' + j.jam_mulai, 'Guru: ' + j.nama_guru);
+    bukaModal('modalQR');
   }
 
   async function hapusJadwalBaris(id) {
