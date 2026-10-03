@@ -29,6 +29,9 @@
   .scan-title { color: #fff; font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 6px; text-align: center; }
   .scan-subtitle { color: #9aa4bd; font-size: 13px; margin-bottom: 20px; text-align: center; max-width: 340px; }
 
+  .mode-badge { display: none; background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.4); color: var(--gold-light); padding: 8px 16px; border-radius: 10px; font-size: 12px; margin-bottom: 16px; max-width: 380px; text-align: center; }
+  .mode-badge.show { display: block; }
+
   #qrReader { width: 100%; max-width: 380px; border-radius: 16px; overflow: hidden; border: 3px solid var(--gold); }
 
   .status-line { margin-top: 18px; color: #cdd4e5; font-size: 13px; display: flex; align-items: center; gap: 8px; min-height: 20px; }
@@ -38,7 +41,8 @@
   .loc-warning { margin-top: 16px; background: rgba(179,38,30,0.15); border: 1px solid rgba(179,38,30,0.4); color: #ff9d96; padding: 10px 16px; border-radius: 10px; font-size: 12.5px; max-width: 380px; text-align: center; display: none; }
   .loc-warning.show { display: block; }
 
-  /* ===== MODAL POPUP HASIL ===== */
+  .link-wajah { margin-top: 22px; color: var(--gold-light); font-size: 12.5px; text-decoration: underline; cursor: pointer; }
+
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12,26,51,0.6); align-items: center; justify-content: center; z-index: 100; padding: 16px; }
   .modal-overlay.show { display: flex; }
   .modal-box { background: #fff; border-radius: 18px; width: 100%; max-width: 400px; overflow: hidden; animation: popIn 0.25s ease; }
@@ -46,11 +50,10 @@
 
   .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 20px 0; }
   .modal-brand { display: flex; align-items: center; gap: 8px; }
-  .modal-brand img, .modal-brand .mark { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; background: var(--navy-dark); }
+  .modal-brand .mark { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; background: var(--navy-dark); }
   .modal-brand .mark svg { width: 15px; height: 15px; stroke: var(--gold-light); }
   .modal-brand .bname { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13px; color: var(--navy-dark); }
   .modal-brand .bsub { font-size: 9.5px; color: var(--ink-soft); }
-  .modal-datetime { text-align: right; font-size: 10.5px; color: var(--ink-soft); }
   .btn-close-modal { background: none; border: none; cursor: pointer; color: var(--ink-soft); font-size: 18px; line-height: 1; padding: 4px; }
 
   .modal-icon-area { text-align: center; padding: 20px 20px 8px; }
@@ -89,11 +92,10 @@
   .modal-detail-row .dlabel { width: 76px; }
   .modal-detail-row .dvalue { color: var(--ink); font-weight: 500; }
 
-  .btn-tutup-modal { display: block; width: calc(100% - 40px); margin: 0 20px 20px; padding: 14px; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-tutup-modal { width: calc(100% - 40px); margin: 0 20px 20px; padding: 14px; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-tutup-modal.hadir { background: var(--green); }
   .btn-tutup-modal.terlambat { background: var(--red); }
 
-  /* Modal error (gagal absen) */
   .modal-icon-circle.gagal { background: var(--red-bg); }
   .modal-icon-circle.gagal svg { stroke: var(--red); }
   .modal-error-text { text-align: center; padding: 0 20px 20px; font-size: 13px; color: var(--ink-soft); }
@@ -104,22 +106,26 @@
 <div class="topbar">
   <div class="topbar-brand">
     <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/></svg></div>
-    <div><div class="title">SMP ARIEFIBRAHIM</div><div class="subtitle">Scan QR Absensi</div></div>
+    <div><div class="title">SMP ARIEFIBRAHIM</div><div class="subtitle" id="subtitleTop">Scan QR Absensi</div></div>
   </div>
   <button class="btn-back" onclick="history.back()">← Kembali</button>
 </div>
 
 <div class="scan-area">
   <div class="scan-title">Arahkan Kamera ke QR Code</div>
-  <div class="scan-subtitle">Kartu pelajar/guru — pastikan Anda berada di area sekolah untuk absensi berhasil.</div>
+  <div class="scan-subtitle" id="scanSubtitle">Kartu pelajar/guru — pastikan Anda berada di area sekolah untuk absensi berhasil.</div>
+
+  <div class="mode-badge" id="modeBadge"></div>
 
   <div id="qrReader"></div>
 
   <div class="status-line"><span class="status-dot"></span><span id="statusText">Meminta izin kamera...</span></div>
   <div class="loc-warning" id="locWarning">⚠ Izin lokasi ditolak. Absensi tidak bisa diproses tanpa akses lokasi GPS.</div>
+
+  <a class="link-wajah" id="linkWajah" href="../absen-wajah/index.html">Kartu QR hilang? Absen dengan wajah (guru) →</a>
 </div>
 
-<!-- ===== MODAL HASIL SUKSES (Hadir/Terlambat/Pulang) ===== -->
+<!-- ===== MODAL HASIL SUKSES ===== -->
 <div class="modal-overlay" id="modalHasil">
   <div class="modal-box">
     <div class="modal-header">
@@ -196,22 +202,38 @@
   const token = sessionStorage.getItem("smp_token");
   if (!token) window.location.href = "../../index.html";
 
+  // ---------- Mode: gerbang (default) atau mapel (dari dashboard Petugas Absensi) ----------
+  const urlParams = new URLSearchParams(window.location.search);
+  const MODE_MAPEL = urlParams.get("mode") === "mapel" && !!urlParams.get("jadwal_id");
+  const JADWAL_ID = urlParams.get("jadwal_id") || "";
+
+  if (MODE_MAPEL) {
+    document.getElementById("subtitleTop").textContent = "Scan QR Absensi Mata Pelajaran";
+    document.getElementById("scanSubtitle").textContent = "Scan kartu siswa untuk mencatat kehadiran pada sesi mata pelajaran yang dipilih.";
+    const badge = document.getElementById("modeBadge");
+    badge.textContent = "Mode: Absensi Mata Pelajaran (sesi " + JADWAL_ID + ")";
+    badge.classList.add("show");
+    document.getElementById("linkWajah").style.display = "none";
+  }
+
   let posisiSekarang = null;
   let sedangProses = false;
   let scannerAktif = null;
   let qrTerakhir = null;
   let waktuTerakhirScan = 0;
-  const COOLDOWN_SCAN_MS = 8000; // jeda 8 detik sebelum QR yang sama boleh discan ulang
+  const COOLDOWN_SCAN_MS = 8000;
 
-  // ---------- Minta izin lokasi sekali di awal, lalu pantau terus ----------
-  if (navigator.geolocation) {
+  // ---------- Lokasi GPS (tidak dibutuhkan di mode mapel) ----------
+  if (MODE_MAPEL) {
+    document.getElementById("statusText").textContent = "Siap memindai QR Code...";
+  } else if (navigator.geolocation) {
     navigator.geolocation.watchPosition(
       (pos) => {
         posisiSekarang = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         document.getElementById("locWarning").classList.remove("show");
-        document.getElementById("statusText").textContent = "Siap memindai QR Code...";
+        if (!sedangProses) document.getElementById("statusText").textContent = "Siap memindai QR Code...";
       },
-      (err) => {
+      () => {
         document.getElementById("locWarning").classList.add("show");
         document.getElementById("statusText").textContent = "Menunggu izin lokasi...";
       },
@@ -222,28 +244,26 @@
     document.getElementById("locWarning").textContent = "Browser tidak mendukung GPS. Gunakan browser modern (Chrome/Safari terbaru).";
   }
 
-  // ---------- Inisialisasi scanner kamera ----------
+  // ---------- Scanner kamera ----------
   function mulaiScanner() {
     scannerAktif = new Html5Qrcode("qrReader");
     scannerAktif.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 250, height: 250 } },
       onScanSukses,
-      () => {} // error per-frame diabaikan, normal saat kamera belum fokus ke QR
-    ).catch((err) => {
+      () => {}
+    ).catch(() => {
       document.getElementById("statusText").textContent = "Gagal mengakses kamera. Izinkan akses kamera di browser.";
     });
   }
   mulaiScanner();
 
   async function onScanSukses(qrValue) {
-    if (sedangProses) return; // cegah scan dobel saat masih proses
+    if (sedangProses) return;
 
     const sekarangMs = Date.now();
-    if (qrValue === qrTerakhir && (sekarangMs - waktuTerakhirScan) < COOLDOWN_SCAN_MS) {
-      return; // abaikan: QR yang sama baru saja discan, masih dalam jeda cooldown
-    }
-    if (!posisiSekarang) {
+    if (qrValue === qrTerakhir && (sekarangMs - waktuTerakhirScan) < COOLDOWN_SCAN_MS) return;
+    if (!MODE_MAPEL && !posisiSekarang) {
       document.getElementById("statusText").textContent = "Menunggu lokasi GPS, coba scan lagi sebentar...";
       return;
     }
@@ -252,35 +272,28 @@
     qrTerakhir = qrValue;
     waktuTerakhirScan = sekarangMs;
     document.getElementById("statusText").textContent = "Memproses...";
-
-    // Hentikan sementara kamera supaya QR yang sama tidak langsung terbaca ulang
     try { if (scannerAktif) scannerAktif.pause(true); } catch (e) {}
 
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "prosesAbsensi", token: token, qr_value: qrValue,
-          lat: posisiSekarang.lat, lng: posisiSekarang.lng
-        })
-      });
+      const payload = MODE_MAPEL
+        ? { action: "prosesAbsensiMapel", token: token, qr_value: qrValue, jadwal_id: JADWAL_ID }
+        : { action: "prosesAbsensi", token: token, qr_value: qrValue, lat: posisiSekarang.lat, lng: posisiSekarang.lng };
+
+      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
       const hasil = await res.json();
 
-      if (hasil.success) {
-        tampilkanModalHasil(hasil.data);
-      } else {
-        tampilkanModalGagal(hasil.message);
-      }
+      if (hasil.success) tampilkanModalHasil(hasil.data);
+      else tampilkanModalGagal(hasil.message);
     } catch (e) {
       tampilkanModalGagal("Tidak bisa terhubung ke server. Periksa koneksi internet.");
     } finally {
       sedangProses = false;
       let sisaDetik = Math.ceil(COOLDOWN_SCAN_MS / 1000);
-      document.getElementById("statusText").textContent = `Jeda ${sisaDetik} detik sebelum siap memindai lagi...`;
+      document.getElementById("statusText").textContent = "Jeda " + sisaDetik + " detik sebelum siap memindai lagi...";
       const hitungMundur = setInterval(() => {
         sisaDetik--;
         if (sisaDetik > 0) {
-          document.getElementById("statusText").textContent = `Jeda ${sisaDetik} detik sebelum siap memindai lagi...`;
+          document.getElementById("statusText").textContent = "Jeda " + sisaDetik + " detik sebelum siap memindai lagi...";
         } else {
           clearInterval(hitungMundur);
           document.getElementById("statusText").textContent = "Siap memindai QR Code...";
@@ -293,18 +306,36 @@
   function tampilkanModalHasil(data) {
     const isTerlambat = data.status === "TERLAMBAT";
     const kelasKey = isTerlambat ? "terlambat" : "hadir";
+    const isJadwal = data.jenis === "Guru Mengajar";
+    const sudahAda = data.tipe === "JADWAL_SUDAH_ADA";
 
     document.getElementById("iconCircle").className = "modal-icon-circle sukses-" + kelasKey;
     document.getElementById("iconSvg").innerHTML = isTerlambat
       ? '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'
       : '<path d="M20 6L9 17l-5-5"/>';
 
+    let judul = "Absensi Berhasil!";
+    let desc = "Data kehadiran telah tersimpan dengan aman.";
+    if (isTerlambat) {
+      judul = "Tercatat Terlambat";
+      desc = "Keterlambatan " + data.menit_terlambat + " menit telah tercatat.";
+    } else if (data.tipe === "PULANG") {
+      judul = "Absensi Pulang Berhasil!";
+    } else if (data.tipe === "MAPEL") {
+      judul = "Hadir Mata Pelajaran";
+      desc = "Kehadiran pada sesi mata pelajaran telah tersimpan.";
+    } else if (sudahAda) {
+      judul = "Sudah Check-in";
+      desc = "Check-in jadwal ini sudah tercatat hari ini.";
+    } else if (isJadwal) {
+      judul = "Check-in Mengajar Berhasil!";
+      desc = "Jangan lupa lengkapi jurnal di menu Isi Jurnal.";
+    }
     document.getElementById("statusTitle").className = "modal-status-title " + kelasKey;
-    document.getElementById("statusTitle").textContent = isTerlambat ? "Tercatat Terlambat" : (data.tipe === "PULANG" ? "Absensi Pulang Berhasil!" : "Absensi Berhasil!");
-    document.getElementById("statusDesc").textContent = isTerlambat
-      ? "Keterlambatan " + data.menit_terlambat + " menit telah tercatat."
-      : "Data kehadiran telah tersimpan dengan aman.";
+    document.getElementById("statusTitle").textContent = judul;
+    document.getElementById("statusDesc").textContent = desc;
 
+    const nama = data.nama || "-";
     if (data.foto_url) {
       document.getElementById("fotoSiswa").src = data.foto_url;
       document.getElementById("fotoSiswa").style.display = "block";
@@ -312,37 +343,33 @@
     } else {
       document.getElementById("fotoSiswa").style.display = "none";
       document.getElementById("avatarFallback").style.display = "flex";
-      document.getElementById("avatarFallback").textContent = data.nama.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+      document.getElementById("avatarFallback").textContent = nama.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
     }
 
-    document.getElementById("namaSiswa").textContent = data.nama;
-    document.getElementById("idLabel").textContent = data.id_label;
+    document.getElementById("namaSiswa").textContent = nama;
+    document.getElementById("idLabel").textContent = data.id_label || "ID";
     document.getElementById("idSiswa").textContent = data.id_tampil || "-";
-    document.getElementById("kelasSiswa").textContent = data.kelas;
+    document.getElementById("kelasSiswa").textContent = data.kelas || "-";
     document.getElementById("baresKelasWrap").style.display = data.jenis === "Guru" ? "none" : "block";
-    document.getElementById("jenisSiswa").textContent = data.jenis;
+    document.getElementById("jenisSiswa").textContent = data.jenis || "-";
 
-    const badgeEl = document.getElementById("badgeStatus");
-    badgeEl.className = "modal-badge-status " + kelasKey;
-    document.getElementById("badgeValue").textContent = data.tipe === "PULANG" ? "PULANG" : data.status;
+    document.getElementById("badgeStatus").className = "modal-badge-status " + kelasKey;
+    document.getElementById("badgeValue").textContent = data.tipe === "PULANG" ? "PULANG" : (data.status || "HADIR");
 
     document.getElementById("detTanggal").textContent = formatTanggalIndo(data.tanggal);
-    document.getElementById("detJam").textContent = data.jam + " WIB";
-
+    document.getElementById("detJam").textContent = (data.jam || "-") + " WIB";
     document.getElementById("btnTutupHasil").className = "btn-tutup-modal " + kelasKey;
 
     document.getElementById("modalHasil").classList.add("show");
-
-    // Auto-tutup setelah beberapa detik supaya siap untuk siswa berikutnya
-    setTimeout(() => { tutupModalHasil(); }, 4000);
+    setTimeout(tutupModalHasil, 4000);
   }
 
   function formatTanggalIndo(tglISO) {
-    const [y,m,d] = tglISO.split("-").map(Number);
+    const [y, m, d] = String(tglISO).split("-").map(Number);
     const hariArr = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
     const bulanArr = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-    const tgl = new Date(y, m-1, d);
-    return hariArr[tgl.getDay()] + ", " + d + " " + bulanArr[m-1] + " " + y;
+    const tgl = new Date(y, m - 1, d);
+    return hariArr[tgl.getDay()] + ", " + d + " " + bulanArr[m - 1] + " " + y;
   }
 
   function tutupModalHasil() { document.getElementById("modalHasil").classList.remove("show"); }
@@ -350,7 +377,7 @@
   function tampilkanModalGagal(pesan) {
     document.getElementById("pesanGagal").textContent = pesan;
     document.getElementById("modalGagal").classList.add("show");
-    setTimeout(() => { tutupModalGagal(); }, 3500);
+    setTimeout(tutupModalGagal, 3500);
   }
   function tutupModalGagal() { document.getElementById("modalGagal").classList.remove("show"); }
 </script>
