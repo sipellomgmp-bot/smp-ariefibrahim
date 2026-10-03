@@ -27,23 +27,30 @@
 
   .scan-area { display: flex; flex-direction: column; align-items: center; padding: 30px 16px; }
   .scan-title { color: #fff; font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 6px; text-align: center; }
-  .scan-subtitle { color: #9aa4bd; font-size: 13px; margin-bottom: 20px; text-align: center; max-width: 340px; }
+  .scan-subtitle { color: #9aa4bd; font-size: 13px; margin-bottom: 16px; text-align: center; max-width: 340px; }
 
-  .warn-fallback { background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.4); color: var(--gold-light); padding: 10px 16px; border-radius: 10px; font-size: 12px; max-width: 380px; text-align: center; margin-bottom: 18px; }
+  .warn-fallback { background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.4); color: var(--gold-light); padding: 10px 16px; border-radius: 10px; font-size: 12px; max-width: 380px; text-align: center; margin-bottom: 16px; }
+
+  /* Kartu jarak */
+  .area-card { width: 100%; max-width: 380px; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; font-size: 13px; border: 1px solid; }
+  .area-card.menunggu { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); color: #cdd4e5; }
+  .area-card.dalam { background: rgba(30,122,51,0.18); border-color: rgba(111,207,127,0.5); color: #9be7a9; }
+  .area-card.luar { background: rgba(179,38,30,0.15); border-color: rgba(179,38,30,0.45); color: #ff9d96; }
+  .area-card .ikon { font-size: 22px; line-height: 1; }
+  .area-card strong { display: block; font-size: 14px; }
 
   #videoBox { position: relative; width: 100%; max-width: 380px; border-radius: 16px; overflow: hidden; border: 3px solid var(--gold); background: #111; aspect-ratio: 4/3; }
-  #videoBox video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #videoBox video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
+  #lockOverlay { position: absolute; inset: 0; background: rgba(12,26,51,0.92); color: #cdd4e5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; font-size: 13px; }
+  #lockOverlay .gembok { font-size: 40px; }
+  #lockOverlay.hide { display: none; }
 
   .status-line { margin-top: 18px; color: #cdd4e5; font-size: 13px; display: flex; align-items: center; gap: 8px; min-height: 20px; text-align: center; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #6fcf7f; animation: pulse 1.5s infinite; flex-shrink: 0; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  .loc-warning { margin-top: 16px; background: rgba(179,38,30,0.15); border: 1px solid rgba(179,38,30,0.4); color: #ff9d96; padding: 10px 16px; border-radius: 10px; font-size: 12.5px; max-width: 380px; text-align: center; display: none; }
-  .loc-warning.show { display: block; }
-
   .link-qr { margin-top: 22px; color: var(--gold-light); font-size: 12.5px; text-decoration: underline; cursor: pointer; }
 
-  /* ===== MODAL POPUP HASIL (sama gaya seperti scan-qr) ===== */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12,26,51,0.6); align-items: center; justify-content: center; z-index: 100; padding: 16px; }
   .modal-overlay.show { display: flex; }
   .modal-box { background: #fff; border-radius: 18px; width: 100%; max-width: 400px; overflow: hidden; animation: popIn 0.25s ease; }
@@ -114,14 +121,21 @@
 
 <div class="scan-area">
   <div class="scan-title">Absen Guru Pakai Wajah</div>
-  <div class="scan-subtitle">Hanya untuk kondisi darurat (kartu QR hilang/rusak). Pastikan wajah terang &amp; menghadap kamera.</div>
+  <div class="scan-subtitle">Kamera hanya terbuka bila Anda berada dalam radius <strong id="txtRadius">50</strong> meter dari titik sekolah. Pastikan wajah terang &amp; menghadap kamera.</div>
 
-  <div class="warn-fallback">⚠️ Metode ini kurang akurat dibanding QR. Kalau kartu QR tersedia, gunakan itu.</div>
+  <div class="warn-fallback">⚠️ Metode cadangan, kurang akurat dibanding QR. Gunakan QR bila kartu tersedia.</div>
 
-  <div id="videoBox"><video id="video" autoplay muted playsinline></video></div>
+  <div class="area-card menunggu" id="areaCard">
+    <div class="ikon" id="areaIkon">📡</div>
+    <div><strong id="areaJudul">Mencari lokasi GPS...</strong><span id="areaDetail">Izinkan akses lokasi di browser.</span></div>
+  </div>
+
+  <div id="videoBox">
+    <video id="video" autoplay muted playsinline></video>
+    <div id="lockOverlay"><div class="gembok">🔒</div><div id="lockText">Kamera terkunci sampai Anda berada di area sekolah.</div></div>
+  </div>
 
   <div class="status-line"><span class="status-dot"></span><span id="statusText">Memuat model deteksi wajah...</span></div>
-  <div class="loc-warning" id="locWarning">⚠ Izin lokasi ditolak. Absensi tidak bisa diproses tanpa akses lokasi GPS.</div>
 
   <a class="link-qr" href="../scan-qr/index.html">Gunakan QR Code saja →</a>
 </div>
@@ -150,7 +164,7 @@
       <div class="avatar-fallback" id="avatarFallback">-</div>
       <div class="modal-profile-info">
         <div class="pnama" id="namaGuru">-</div>
-        <div class="prow"><span id="idLabel">NIP/NUPTK</span>&nbsp;: <strong id="idGuru">-</strong></div>
+        <div class="prow"><span>NIP/NUPTK</span>&nbsp;: <strong id="idGuru">-</strong></div>
       </div>
     </div>
 
@@ -165,10 +179,7 @@
       <div class="modal-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="dlabel">Metode</span><span class="dvalue">Wajah (Cadangan)</span></div>
     </div>
 
-    <button class="btn-tutup-modal" id="btnTutupHasil" onclick="tutupModalHasil()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-      Tutup
-    </button>
+    <button class="btn-tutup-modal" id="btnTutupHasil" onclick="tutupModalHasil()">Tutup</button>
   </div>
 </div>
 
@@ -187,37 +198,39 @@
       <div class="modal-status-title terlambat">Absensi Gagal</div>
     </div>
     <div class="modal-error-text" id="pesanGagal">-</div>
-    <button class="btn-tutup-modal terlambat" onclick="tutupModalGagal()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      Tutup &amp; Coba Lagi
-    </button>
+    <button class="btn-tutup-modal terlambat" onclick="tutupModalGagal()">Tutup &amp; Coba Lagi</button>
   </div>
 </div>
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+  const MODEL_URL = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
 
   const token = sessionStorage.getItem("smp_token");
   if (!token) window.location.href = "../../index.html";
 
-  let posisiSekarang = null;
-  let faceMatcher = null;
-  let sedangProses = false;
-  let guruTerakhir = null;
-  let waktuTerakhirScan = 0;
-  const COOLDOWN_SCAN_MS = 8000;
-  const AMBANG_COCOK = 0.5; // makin kecil makin ketat pencocokannya
+  const JEDA_SUKSES_MS = 8000;   // jeda setelah absen berhasil
+  const JEDA_GAGAL_MS = 5000;    // jeda setelah gagal (hemat panggilan server)
+  const CEK_AREA_MS = 4000;      // seberapa sering jarak dicek ke server
 
-  // ---------- Lokasi GPS ----------
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(
-      (pos) => { posisiSekarang = { lat: pos.coords.latitude, lng: pos.coords.longitude }; document.getElementById("locWarning").classList.remove("show"); },
-      () => { document.getElementById("locWarning").classList.add("show"); },
-      { enableHighAccuracy: true, maximumAge: 5000 }
-    );
-  } else {
-    document.getElementById("locWarning").classList.add("show");
-    document.getElementById("locWarning").textContent = "Browser tidak mendukung GPS.";
+  let posisi = null;
+  let modelSiap = false;
+  let stream = null;
+  let kameraAktif = false;
+  let sedangProses = false;
+  let sedangCekArea = false;
+  let terakhirCekArea = 0;
+  let jedaSampai = 0;
+  let loopTimer = null;
+  let dalamArea = false;
+
+  const el = (id) => document.getElementById(id);
+
+  function setAreaCard(kelas, ikon, judul, detail) {
+    el("areaCard").className = "area-card " + kelas;
+    el("areaIkon").textContent = ikon;
+    el("areaJudul").textContent = judul;
+    el("areaDetail").textContent = detail;
   }
 
   async function callApi(action, extraParams) {
@@ -226,141 +239,202 @@
     return res.json();
   }
 
-  async function mulai() {
+  // ---------- 1. Muat model wajah ----------
+  async function muatModel() {
     try {
-      const MODEL_URL = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
       await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
       await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-
-      document.getElementById("statusText").textContent = "Memuat data wajah guru terdaftar...";
-      const hasilGuru = await callApi("getGuruFaceDescriptors");
-      if (!hasilGuru.success || hasilGuru.data.length === 0) {
-        document.getElementById("statusText").textContent = "Belum ada guru yang terdaftar wajahnya. Gunakan QR.";
-        return;
-      }
-
-      const labeled = hasilGuru.data.map(g => new faceapi.LabeledFaceDescriptors(
-        g.guru_id, [new Float32Array(g.descriptor)]
-      ));
-      faceMatcher = new faceapi.FaceMatcher(labeled, AMBANG_COCOK);
-      window._dataGuru = hasilGuru.data; // simpan untuk ambil nama/foto saat cocok
-
-      const video = document.getElementById("video");
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-      video.srcObject = stream;
-
-      document.getElementById("statusText").textContent = "Siap mendeteksi wajah...";
-      setInterval(deteksiLoop, 1000);
+      modelSiap = true;
+      el("statusText").textContent = "Model siap. Menunggu Anda berada di area sekolah...";
+      evaluasiKamera();
     } catch (e) {
-      document.getElementById("statusText").textContent = "Gagal memuat sistem: " + e.message;
+      el("statusText").textContent = "Gagal memuat model wajah: " + e.message;
     }
   }
 
-  async function deteksiLoop() {
-    if (sedangProses || !faceMatcher) return;
-    const video = document.getElementById("video");
+  // ---------- 2. GPS + cek jarak ke server ----------
+  function mulaiGPS() {
+    if (!navigator.geolocation) {
+      setAreaCard("luar", "⚠️", "GPS tidak didukung", "Gunakan browser modern (Chrome/Safari terbaru).");
+      return;
+    }
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        posisi = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        cekArea();
+      },
+      () => {
+        posisi = null;
+        setAreaCard("luar", "⚠️", "Izin lokasi ditolak", "Aktifkan izin lokasi agar kamera bisa dibuka.");
+        tutupKamera("Izin lokasi dibutuhkan.");
+      },
+      { enableHighAccuracy: true, maximumAge: 3000 }
+    );
+    // Pengecekan berkala (jaga-jaga watchPosition jarang memicu)
+    setInterval(cekArea, CEK_AREA_MS);
+  }
+
+  async function cekArea() {
+    if (!posisi || sedangCekArea) return;
+    const sekarang = Date.now();
+    if (sekarang - terakhirCekArea < CEK_AREA_MS - 500) return;
+    sedangCekArea = true;
+    terakhirCekArea = sekarang;
+    try {
+      const hasil = await callApi("cekAreaWajah", { lat: posisi.lat, lng: posisi.lng });
+      if (!hasil.success) {
+        dalamArea = false;
+        setAreaCard("luar", "⚠️", "Tidak bisa memeriksa lokasi", hasil.message);
+      } else {
+        const d = hasil.data;
+        el("txtRadius").textContent = d.radius_meter;
+        dalamArea = d.dalam_area;
+        if (d.dalam_area) {
+          setAreaCard("dalam", "✅", "Anda di area sekolah", "Jarak ± " + d.jarak_meter + " m (maks " + d.radius_meter + " m).");
+        } else {
+          setAreaCard("luar", "📍", "Di luar area absen wajah", "Jarak ± " + d.jarak_meter + " m. Dekati sekolah hingga ≤ " + d.radius_meter + " m.");
+        }
+      }
+    } catch (e) {
+      dalamArea = false;
+      setAreaCard("luar", "⚠️", "Server tidak terjangkau", "Periksa koneksi internet.");
+    } finally {
+      sedangCekArea = false;
+      evaluasiKamera();
+    }
+  }
+
+  // ---------- 3. Kamera hanya dibuka bila dalam area ----------
+  function evaluasiKamera() {
+    if (dalamArea && modelSiap && !kameraAktif) bukaKamera();
+    if (!dalamArea && kameraAktif) tutupKamera("Anda keluar dari area sekolah. Kamera ditutup.");
+  }
+
+  async function bukaKamera() {
+    kameraAktif = true; // cegah pemanggilan ganda
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      el("video").srcObject = stream;
+      el("lockOverlay").classList.add("hide");
+      el("statusText").textContent = "Kamera aktif. Hadapkan wajah ke kamera...";
+      jalankanLoop();
+    } catch (e) {
+      kameraAktif = false;
+      el("statusText").textContent = "Gagal membuka kamera. Izinkan akses kamera di browser.";
+    }
+  }
+
+  function tutupKamera(pesan) {
+    kameraAktif = false;
+    if (loopTimer) { clearTimeout(loopTimer); loopTimer = null; }
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    el("video").srcObject = null;
+    el("lockOverlay").classList.remove("hide");
+    el("lockText").textContent = pesan || "Kamera terkunci sampai Anda berada di area sekolah.";
+    el("statusText").textContent = pesan || "Kamera terkunci.";
+  }
+
+  // ---------- 4. Deteksi wajah -> kirim vektor ke server ----------
+  function jalankanLoop() {
+    if (!kameraAktif) return;
+    loopTimer = setTimeout(async () => {
+      await deteksiSekali();
+      jalankanLoop();
+    }, 700);
+  }
+
+  async function deteksiSekali() {
+    if (!kameraAktif || sedangProses || !dalamArea || !posisi) return;
+    if (Date.now() < jedaSampai) return;
+    const video = el("video");
     if (video.readyState < 2) return;
 
-    const deteksi = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks().withFaceDescriptor();
-    if (!deteksi) { document.getElementById("statusText").textContent = "Mencari wajah..."; return; }
+    let deteksi;
+    try {
+      deteksi = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.6 }))
+        .withFaceLandmarks().withFaceDescriptor();
+    } catch (e) { return; }
 
-    const match = faceMatcher.findBestMatch(deteksi.descriptor);
-    if (match.label === "unknown") {
-      document.getElementById("statusText").textContent = "Wajah tidak dikenali.";
-      return;
-    }
-
-    const guruId = match.label;
-    const sekarangMs = Date.now();
-    if (guruId === guruTerakhir && (sekarangMs - waktuTerakhirScan) < COOLDOWN_SCAN_MS) return;
-
-    if (!posisiSekarang) {
-      document.getElementById("statusText").textContent = "Menunggu lokasi GPS...";
-      return;
-    }
+    if (!deteksi) { el("statusText").textContent = "Mencari wajah..."; return; }
 
     sedangProses = true;
-    guruTerakhir = guruId;
-    waktuTerakhirScan = sekarangMs;
-    document.getElementById("statusText").textContent = "Wajah dikenali, memproses...";
-
+    el("statusText").textContent = "Wajah terdeteksi, memverifikasi ke server...";
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "prosesAbsensiWajah", token: token, guru_id: guruId, lat: posisiSekarang.lat, lng: posisiSekarang.lng })
+      const hasil = await callApi("prosesAbsensiWajah", {
+        descriptor: Array.from(deteksi.descriptor),
+        lat: posisi.lat,
+        lng: posisi.lng
       });
-      const hasil = await res.json();
-      if (hasil.success) tampilkanModalHasil(hasil.data);
-      else tampilkanModalGagal(hasil.message);
+      if (hasil.success) {
+        tampilkanModalHasil(hasil.data);
+        jedaSampai = Date.now() + JEDA_SUKSES_MS;
+      } else {
+        tampilkanModalGagal(hasil.message);
+        jedaSampai = Date.now() + JEDA_GAGAL_MS;
+      }
     } catch (e) {
       tampilkanModalGagal("Tidak bisa terhubung ke server. Periksa koneksi internet.");
+      jedaSampai = Date.now() + JEDA_GAGAL_MS;
     } finally {
       sedangProses = false;
-      mulaiCooldown();
+      if (kameraAktif) el("statusText").textContent = "Siap mendeteksi wajah...";
     }
   }
 
-  function mulaiCooldown() {
-    let sisaDetik = Math.ceil(COOLDOWN_SCAN_MS / 1000);
-    document.getElementById("statusText").textContent = `Jeda ${sisaDetik} detik...`;
-    const h = setInterval(() => {
-      sisaDetik--;
-      if (sisaDetik > 0) document.getElementById("statusText").textContent = `Jeda ${sisaDetik} detik...`;
-      else { clearInterval(h); document.getElementById("statusText").textContent = "Siap mendeteksi wajah..."; }
-    }, 1000);
-  }
-
+  // ---------- Modal ----------
   function tampilkanModalHasil(data) {
     const isMerah = data.status === "TERLAMBAT";
     const kelasKey = isMerah ? "terlambat" : "hadir";
+    const nama = data.nama || "-";
 
-    document.getElementById("iconCircle").className = "modal-icon-circle sukses-" + kelasKey;
-    document.getElementById("iconSvg").innerHTML = isMerah ? '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>' : '<path d="M20 6L9 17l-5-5"/>';
-    document.getElementById("statusTitle").className = "modal-status-title " + kelasKey;
-    document.getElementById("statusTitle").textContent = data.tipe === "PULANG" ? "Absensi Pulang Berhasil!" : (isMerah ? "Tercatat Terlambat" : "Absensi Berhasil!");
-    document.getElementById("statusDesc").textContent = isMerah ? "Keterlambatan " + (data.menit_terlambat || 0) + " menit telah tercatat." : "Data kehadiran telah tersimpan dengan aman.";
+    el("iconCircle").className = "modal-icon-circle sukses-" + kelasKey;
+    el("iconSvg").innerHTML = isMerah ? '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>' : '<path d="M20 6L9 17l-5-5"/>';
+    el("statusTitle").className = "modal-status-title " + kelasKey;
+    el("statusTitle").textContent = data.tipe === "PULANG" ? "Absensi Pulang Berhasil!" : (isMerah ? "Tercatat Terlambat" : "Absensi Berhasil!");
+    el("statusDesc").textContent = isMerah ? "Keterlambatan " + (data.menit_terlambat || 0) + " menit telah tercatat." : "Data kehadiran telah tersimpan dengan aman.";
 
     if (data.foto_url) {
-      document.getElementById("fotoGuru").src = data.foto_url;
-      document.getElementById("fotoGuru").style.display = "block";
-      document.getElementById("avatarFallback").style.display = "none";
+      el("fotoGuru").src = data.foto_url;
+      el("fotoGuru").style.display = "block";
+      el("avatarFallback").style.display = "none";
     } else {
-      document.getElementById("fotoGuru").style.display = "none";
-      document.getElementById("avatarFallback").style.display = "flex";
-      document.getElementById("avatarFallback").textContent = data.nama.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase();
+      el("fotoGuru").style.display = "none";
+      el("avatarFallback").style.display = "flex";
+      el("avatarFallback").textContent = nama.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
     }
 
-    document.getElementById("namaGuru").textContent = data.nama;
-    document.getElementById("idGuru").textContent = data.id_tampil || "-";
-    document.getElementById("badgeStatus").className = "modal-badge-status " + kelasKey;
-    document.getElementById("badgeValue").textContent = data.tipe === "PULANG" ? "PULANG" : data.status;
-    document.getElementById("detTanggal").textContent = formatTanggalIndo(data.tanggal);
-    document.getElementById("detJam").textContent = (data.jam || "-") + " WIB";
-    document.getElementById("btnTutupHasil").className = "btn-tutup-modal " + kelasKey;
-    document.getElementById("modalHasil").classList.add("show");
+    el("namaGuru").textContent = nama;
+    el("idGuru").textContent = data.id_tampil || "-";
+    el("badgeStatus").className = "modal-badge-status " + kelasKey;
+    el("badgeValue").textContent = data.tipe === "PULANG" ? "PULANG" : data.status;
+    el("detTanggal").textContent = formatTanggalIndo(data.tanggal);
+    el("detJam").textContent = (data.jam || "-") + " WIB";
+    el("btnTutupHasil").className = "btn-tutup-modal " + kelasKey;
+    el("modalHasil").classList.add("show");
     setTimeout(tutupModalHasil, 4000);
   }
 
   function formatTanggalIndo(tglISO) {
-    const [y,m,d] = String(tglISO).split("-").map(Number);
+    const [y, m, d] = String(tglISO).split("-").map(Number);
     const hariArr = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
     const bulanArr = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-    const tgl = new Date(y, m-1, d);
-    return hariArr[tgl.getDay()] + ", " + d + " " + bulanArr[m-1] + " " + y;
+    const tgl = new Date(y, m - 1, d);
+    return hariArr[tgl.getDay()] + ", " + d + " " + bulanArr[m - 1] + " " + y;
   }
 
-  function tutupModalHasil() { document.getElementById("modalHasil").classList.remove("show"); }
+  function tutupModalHasil() { el("modalHasil").classList.remove("show"); }
   function tampilkanModalGagal(pesan) {
-    document.getElementById("pesanGagal").textContent = pesan;
-    document.getElementById("modalGagal").classList.add("show");
+    el("pesanGagal").textContent = pesan;
+    el("modalGagal").classList.add("show");
     setTimeout(tutupModalGagal, 3500);
   }
-  function tutupModalGagal() { document.getElementById("modalGagal").classList.remove("show"); }
+  function tutupModalGagal() { el("modalGagal").classList.remove("show"); }
 
-  mulai();
+  // ---------- Mulai ----------
+  mulaiGPS();
+  muatModel();
 </script>
 </body>
 </html>
-
