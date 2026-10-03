@@ -926,6 +926,7 @@
         <td class="action-group">
           <button class="link-action" onclick="bukaEditSiswa('${s.siswa_id}')">Edit</button>
           <button class="link-action" onclick="bukaModalQR('siswa','${s.siswa_id}')">Lihat QR</button>
+            <button class="link-action" onclick="window.location.href='../daftar-wajah/index.html?guru_id=${g.guru_id}'">Daftar Wajah</button>
           <button class="link-action ${s.is_active ? 'danger' : ''}" onclick="toggleStatusSiswa('${s.siswa_id}', ${!s.is_active})">${s.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button>
           <button class="link-action danger" onclick="hapusSiswaBaris('${s.siswa_id}')">Hapus</button>
         </td>
