@@ -1,1 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar Wajah Guru — SMP ARIEFIBRAHIM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<style>
+  :root {
+    --navy-darkest: #0c1a33; --navy-dark: #14284d; --navy: #1a3260;
+    --gold: #d4af37; --gold-light: #e8ca6a; --cream: #f5f4f0; --ink: #1a2233; --ink-soft: #5b6478;
+    --border-soft: #e3e0d5; --green: #1e7a33; --green-bg: #eaf6ec; --red: #b3261e; --red-bg: #fdecec;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+  .topbar { background: var(--navy-dark); color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar .title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; }
+  .topbar .subtitle { font-size: 10.5px; color: #b9c2d6; }
+  .btn-back { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; cursor: pointer; }
+
+  .wrap { max-width: 520px; margin: 0 auto; padding: 22px 16px 50px; }
+  .card { background: #fff; border: 1px solid var(--border-soft); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h2 { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--navy-dark); margin-bottom: 12px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+  select { width: 100%; padding: 11px 12px; border: 1.5px solid var(--border-soft); border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; margin-bottom: 8px; }
+  .hint { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+
+  #videoBox { position: relative; width: 100%; border-radius: 14px; overflow: hidden; background: #111; aspect-ratio: 4/3; border: 3px solid var(--gold); }
+  #videoBox video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
+  #videoOff { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #9aa4bd; font-size: 13px; background: #111; text-align: center; padding: 20px; }
+  #videoOff.hide { display: none; }
+
+  .progress { display: flex; gap: 8px; margin: 14px 0; }
+  .dot { flex: 1; height: 8px; border-radius: 99px; background: var(--border-soft); }
+  .dot.isi { background: var(--green); }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  button.btn { flex: 1; min-width: 120px; padding: 12px; border-radius: 10px; border: none; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .btn-primary { background: var(--navy-dark); color: #fff; }
+  .btn-gold { background: var(--gold); color: var(--navy-darkest); }
+  .btn-danger { background: var(--red-bg); color: var(--red); }
+  .btn-light { background: #fff; border: 1.5px solid var(--border-soft) !important; color: var(--ink-soft); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .msg { padding: 10px 12px; border-radius: 8px; font-size: 12.5px; margin-top: 12px; display: none; }
+  .msg.show { display: block; }
+  .msg.ok { background: var(--green-bg); color: var(--green); }
+  .msg.err { background: var(--red-bg); color: var(--red); }
+  .msg.info { background: #e8f0fd; color: #1a4a8a; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div><div class="title">Daftar Wajah Guru</div><div class="subtitle">SMP ARIEFIBRAHIM · khusus Operator / Super Admin</div></div>
+  <button class="btn-back" onclick="history.back()">← Kembali</button>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <h2>1. Pilih Guru</h2>
+    <label for="pilihGuru">Nama Guru</label>
+    <select id="pilihGuru"><option value="">Memuat daftar guru...</option></select>
+    <div class="hint" id="statusGuru"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Ambil 3 Sampel Wajah</h2>
+    <div class="hint" style="margin-bottom:12px;">Minta guru menghadap kamera dengan cahaya cukup, tanpa masker/kacamata gelap. Ambil sampel: (1) lurus, (2) sedikit menoleh kiri/kanan, (3) tersenyum. Tiga sampel membuat pengenalan lebih akurat.</div>
+    <div id="videoBox"><video id="video" autoplay muted playsinline></video><div id="videoOff">Kamera belum aktif</div></div>
+    <div class="progress"><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div></div>
+    <div class="row">
+      <button class="btn btn-light" id="btnKamera">Buka Kamera</button>
+      <button class="btn btn-gold" id="btnAmbil" disabled>Ambil Sampel</button>
+    </div>
+    <div class="msg" id="msgSampel"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Simpan</h2>
+    <div class="row">
+      <button class="btn btn-primary" id="btnSimpan" disabled>Simpan Wajah</button>
+      <button class="btn btn-light" id="btnUlang">Ulangi Sampel</button>
+      <button class="btn btn-danger" id="btnHapus">Hapus Data Wajah</button>
+    </div>
+    <div class="msg" id="msgSimpan"></div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+  const MODEL_URL = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
+  const JUMLAH_SAMPEL = 3;
+
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+  if (!token || !userStr) window.location.href = "../../index.html";
+  const user = JSON.parse(userStr);
+  if (user.role !== "operator" && user.role !== "super_admin") {
+    alert("Akses ditolak. Halaman ini khusus Operator/Super Admin.");
+    window.location.href = "../../index.html";
+  }
+
+  const el = (id) => document.getElementById(id);
+  let stream = null, modelSiap = false, sampel = [], statusWajah = {};
+
+  async function callApi(action, extraParams) {
+    const body = Object.assign({ action: action, token: token }, extraParams || {});
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
+    return res.json();
+  }
+
+  function tampilPesan(id, tipe, teks) {
+    const box = el(id);
+    box.className = "msg show " + tipe;
+    box.textContent = teks;
+  }
+
+  function perbaruiProgress() {
+    for (let i = 1; i <= JUMLAH_SAMPEL; i++) el("d" + i).className = "dot" + (sampel.length >= i ? " isi" : "");
+    el("btnSimpan").disabled = sampel.length < JUMLAH_SAMPEL || !el("pilihGuru").value;
+  }
+
+  function perbaruiStatusGuru() {
+    const id = el("pilihGuru").value;
+    if (!id) { el("statusGuru").textContent = ""; return; }
+    const s = statusWajah[id];
+    el("statusGuru").textContent = s
+      ? "✅ Wajah sudah terdaftar (" + s.jumlah_sampel + " sampel). Menyimpan lagi akan menimpa data lama."
+      : "Belum ada wajah terdaftar untuk guru ini.";
+    perbaruiProgress();
+  }
+
+  async function muatGuru() {
+    const [g, s] = await Promise.all([callApi("getGuruList"), callApi("getStatusWajahGuru")]);
+    if (!g.success) { el("pilihGuru").innerHTML = '<option value="">Gagal memuat guru</option>'; return; }
+    statusWajah = {};
+    if (s.success) s.data.forEach(x => { statusWajah[x.guru_id] = x; });
+
+    const pilihan = new URLSearchParams(window.location.search).get("guru_id") || "";
+    el("pilihGuru").innerHTML = '<option value="">-- Pilih Guru --</option>' +
+      g.data.filter(x => x.is_active).map(x =>
+        '<option value="' + x.guru_id + '"' + (x.guru_id === pilihan ? " selected" : "") + ">" +
+        x.nama_lengkap + (statusWajah[x.guru_id] ? "  ✓ terdaftar" : "") + "</option>").join("");
+    perbaruiStatusGuru();
+  }
+
+  async function muatModel() {
+    try {
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      modelSiap = true;
+    } catch (e) {
+      tampilPesan("msgSampel", "err", "Gagal memuat model wajah: " + e.message);
+    }
+  }
+
+  el("pilihGuru").addEventListener("change", () => { sampel = []; perbaruiStatusGuru(); perbaruiProgress(); });
+
+  el("btnKamera").addEventListener("click", async () => {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop()); stream = null;
+      el("video").srcObject = null; el("videoOff").classList.remove("hide");
+      el("btnKamera").textContent = "Buka Kamera"; el("btnAmbil").disabled = true;
+      return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      el("video").srcObject = stream;
+      el("videoOff").classList.add("hide");
+      el("btnKamera").textContent = "Tutup Kamera";
+      el("btnAmbil").disabled = false;
+    } catch (e) {
+      tampilPesan("msgSampel", "err", "Gagal membuka kamera. Izinkan akses kamera di browser.");
+    }
+  });
+
+  el("btnAmbil").addEventListener("click", async () => {
+    if (!el("pilihGuru").value) { tampilPesan("msgSampel", "err", "Pilih guru dulu."); return; }
+    if (!modelSiap) { tampilPesan("msgSampel", "info", "Model wajah masih dimuat, tunggu sebentar."); return; }
+    if (sampel.length >= JUMLAH_SAMPEL) { tampilPesan("msgSampel", "info", "Sampel sudah lengkap. Klik Simpan Wajah."); return; }
+
+    el("btnAmbil").disabled = true;
+    tampilPesan("msgSampel", "info", "Mendeteksi wajah...");
+    try {
+      const d = await faceapi
+        .detectSingleFace(el("video"), new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 }))
+        .withFaceLandmarks().withFaceDescriptor();
+      if (!d) { tampilPesan("msgSampel", "err", "Wajah tidak terdeteksi. Perbaiki cahaya/posisi lalu coba lagi."); }
+      else {
+        sampel.push(Array.from(d.descriptor));
+        tampilPesan("msgSampel", "ok", "Sampel " + sampel.length + " dari " + JUMLAH_SAMPEL + " berhasil diambil.");
+        perbaruiProgress();
+      }
+    } catch (e) {
+      tampilPesan("msgSampel", "err", "Terjadi kesalahan deteksi: " + e.message);
+    }
+    el("btnAmbil").disabled = !stream;
+  });
+
+  el("btnUlang").addEventListener("click", () => {
+    sampel = []; perbaruiProgress();
+    tampilPesan("msgSampel", "info", "Sampel direset. Ambil ulang dari awal.");
+  });
+
+  el("btnSimpan").addEventListener("click", async () => {
+    const guruId = el("pilihGuru").value;
+    if (!guruId || sampel.length < JUMLAH_SAMPEL) return;
+    el("btnSimpan").disabled = true;
+    tampilPesan("msgSimpan", "info", "Menyimpan...");
+    const hasil = await callApi("simpanWajahGuru", { guru_id: guruId, descriptors: sampel });
+    if (hasil.success) {
+      tampilPesan("msgSimpan", "ok", "Wajah guru berhasil disimpan. Guru sekarang bisa absen dengan wajah.");
+      sampel = [];
+      await muatGuru();
+      perbaruiProgress();
+    } else {
+      tampilPesan("msgSimpan", "err", hasil.message);
+      perbaruiProgress();
+    }
+  });
+
+  el("btnHapus").addEventListener("click", async () => {
+    const guruId = el("pilihGuru").value;
+    if (!guruId) { tampilPesan("msgSimpan", "err", "Pilih guru dulu."); return; }
+    if (!confirm("Hapus data wajah guru ini? Guru tidak bisa absen wajah sampai didaftarkan ulang.")) return;
+    const hasil = await callApi("hapusWajahGuru", { guru_id: guruId });
+    if (hasil.success) { tampilPesan("msgSimpan", "ok", "Data wajah dihapus."); await muatGuru(); }
+    else tampilPesan("msgSimpan", "err", hasil.message);
+  });
+
+  muatGuru();
+  muatModel();
+</script>
+</body>
+</html>
 
