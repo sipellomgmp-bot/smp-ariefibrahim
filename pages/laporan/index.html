@@ -1,1 +1,553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Absensi — SMP ARIEFIBRAHIM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --navy-darkest: #0c1a33; --navy-dark: #14284d; --navy: #1a3260; --navy-light: #24447e;
+    --gold: #d4af37; --gold-light: #e8ca6a; --cream: #f5f4f0; --ink: #1a2233; --ink-soft: #5b6478;
+    --border-soft: #e3e0d5; --green: #1e7a33; --green-bg: #eaf6ec; --red: #b3261e; --red-bg: #fdecec;
+    --orange: #b5620a; --orange-bg: #fdf1e2; --blue: #1d5fbf; --blue-bg: #e8f0fd; --purple: #6b3fa0; --purple-bg: #f1e9fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+  .topbar { background: var(--navy-dark); color: #fff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .topbar .title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 17px; }
+  .topbar .subtitle { font-size: 10.5px; color: #b9c2d6; }
+  .btn-back { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12.5px; cursor: pointer; }
+
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 22px 20px 60px; }
+  .card { background: #fff; border: 1px solid var(--border-soft); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--navy-dark); margin-bottom: 12px; }
+
+  .seg { display: inline-flex; border: 1.5px solid var(--border-soft); border-radius: 10px; overflow: hidden; margin-bottom: 14px; flex-wrap: wrap; }
+  .seg button { border: none; background: #fff; padding: 9px 18px; font-size: 13px; font-weight: 600; color: var(--ink-soft); cursor: pointer; font-family: 'Inter', sans-serif; }
+  .seg button.aktif { background: var(--navy-dark); color: #fff; }
+
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; align-items: end; }
+  .field label { display: block; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input, .field select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-soft); border-radius: 8px; font-size: 13.5px; font-family: 'Inter', sans-serif; background: #fff; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--navy); }
+  .field select:disabled { background: var(--cream); }
+  .hide { display: none !important; }
+
+  .btn { border: none; padding: 11px 18px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .btn-primary { background: var(--navy-dark); color: #fff; }
+  .btn-primary:hover { background: var(--navy); }
+  .btn-gold { background: var(--gold); color: var(--navy-darkest); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .aksi-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .msg { padding: 11px 14px; border-radius: 9px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .msg.show { display: block; }
+  .msg.err { background: var(--red-bg); color: var(--red); }
+  .msg.info { background: var(--blue-bg); color: #1a4a8a; }
+
+  .periode-label { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--navy-dark); margin-bottom: 4px; }
+  .periode-sub { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 16px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: #fff; border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px 16px; }
+  .stat .lbl { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
+  .stat .val { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--navy-dark); margin-top: 2px; }
+  .stat.hijau .val { color: var(--green); } .stat.oranye .val { color: var(--orange); } .stat.merah .val { color: var(--red); } .stat.ungu .val { color: var(--purple); } .stat.biru .val { color: var(--blue); }
+
+  .chart-box { position: relative; height: 280px; }
+
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead { background: var(--navy-dark); }
+  th { color: #fff; text-align: center; padding: 10px 10px; font-weight: 600; white-space: nowrap; }
+  td { padding: 9px 10px; border-top: 1px solid var(--border-soft); text-align: center; }
+  td.kiri, th.kiri { text-align: left; }
+  tbody tr:nth-child(even) { background: #fafaf7; }
+  .badge { padding: 3px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 700; display: inline-block; }
+  .b-hadir { background: var(--green-bg); color: var(--green); }
+  .b-terlambat { background: var(--orange-bg); color: var(--orange); }
+  .b-izin { background: var(--blue-bg); color: var(--blue); }
+  .b-alpa { background: var(--red-bg); color: var(--red); }
+  .b-belum { background: #eee; color: #666; }
+  .kosong { text-align: center; padding: 30px; color: var(--ink-soft); font-size: 13px; }
+
+  /* ===== Area cetak ===== */
+  .kop { display: flex; align-items: center; gap: 16px; border-bottom: 3px double #222; padding-bottom: 10px; margin-bottom: 14px; }
+  .kop img { width: 70px; height: 70px; object-fit: contain; }
+  .kop .kop-teks { flex: 1; text-align: center; }
+  .kop .nama { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+  .kop .alamat { font-size: 11.5px; color: #333; margin-top: 2px; }
+  .judul-cetak { text-align: center; margin-bottom: 12px; }
+  .judul-cetak .j1 { font-weight: 700; font-size: 15px; text-transform: uppercase; }
+  .judul-cetak .j2 { font-size: 12.5px; margin-top: 2px; }
+  .ttd { display: flex; justify-content: flex-end; margin-top: 30px; font-size: 12.5px; }
+  .ttd .kotak { text-align: center; min-width: 220px; }
+  .ttd .kotak img { height: 70px; object-fit: contain; margin: 4px 0; }
+  .ttd .nama-ttd { font-weight: 700; text-decoration: underline; margin-top: 4px; }
+  .catatan-cetak { font-size: 10.5px; color: #555; margin-top: 14px; }
+
+  @media (max-width: 700px) {
+    .wrap { padding: 14px 10px 50px; }
+    .seg button { padding: 8px 12px; }
+  }
+
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+    .wrap { max-width: none; padding: 0; }
+    .card { border: none; padding: 0; margin: 0 0 10px 0; }
+    #areaCetak { display: block !important; }
+    th { background: #14284d !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    table { font-size: 10.5px; }
+    @page { size: A4 landscape; margin: 12mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar no-print">
+  <div><div class="title">Laporan Absensi</div><div class="subtitle">SMP ARIEFIBRAHIM · Smart School Attendance System</div></div>
+  <button class="btn-back" onclick="kembali()">← Kembali</button>
+</div>
+
+<div class="wrap">
+
+  <div class="card no-print">
+    <div class="seg" id="segJenis">
+      <button data-jenis="siswa" class="aktif">Siswa</button>
+      <button data-jenis="guru" id="btnJenisGuru">Guru</button>
+    </div>
+    <br>
+    <div class="seg" id="segPeriode">
+      <button data-periode="harian" class="aktif">Harian</button>
+      <button data-periode="mingguan">Mingguan</button>
+      <button data-periode="bulanan">Bulanan</button>
+      <button data-periode="tahunan">Tahunan (Tahun Ajaran)</button>
+    </div>
+
+    <div class="filters">
+      <div class="field" id="fTanggal"><label id="lblTanggal">Tanggal</label><input type="date" id="inTanggal"></div>
+      <div class="field hide" id="fBulan"><label>Bulan</label><input type="month" id="inBulan"></div>
+      <div class="field hide" id="fTahun"><label>Tahun Ajaran</label><select id="inTahun"></select></div>
+      <div class="field" id="fKelas"><label>Kelas</label><select id="inKelas"><option value="">Semua Kelas</option></select></div>
+      <div class="aksi-row"><button class="btn btn-primary" id="btnTampil">Tampilkan Laporan</button></div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div id="hasil" class="hide">
+    <div class="no-print">
+      <div class="periode-label" id="lblPeriode">-</div>
+      <div class="periode-sub" id="subPeriode">-</div>
+      <div class="stat-grid" id="kartu"></div>
+
+      <div class="card" id="cardGrafik">
+        <div class="card-title" id="judulGrafik">Grafik Kehadiran</div>
+        <div class="chart-box"><canvas id="grafik"></canvas></div>
+      </div>
+
+      <div class="aksi-row" style="margin-bottom:16px;">
+        <button class="btn btn-green" id="btnExcel">⬇ Download Excel</button>
+        <button class="btn btn-gold" id="btnCetak">🖨 Cetak / Simpan PDF</button>
+      </div>
+    </div>
+
+    <!-- ===== AREA CETAK ===== -->
+    <div class="card" id="areaCetak">
+      <div class="kop">
+        <img id="kopLogo" alt="" class="hide">
+        <div class="kop-teks"><div class="nama" id="kopNama">-</div><div class="alamat" id="kopAlamat"></div></div>
+      </div>
+      <div class="judul-cetak"><div class="j1" id="cetakJudul">-</div><div class="j2" id="cetakSub">-</div></div>
+
+      <div class="tbl-wrap"><table><thead id="theadUtama"></thead><tbody id="tbodyUtama"></tbody></table></div>
+
+      <div id="blokPerKelas" class="hide" style="margin-top:20px;">
+        <div class="card-title">Rekap per Kelas</div>
+        <div class="tbl-wrap"><table><thead id="theadKelas"></thead><tbody id="tbodyKelas"></tbody></table></div>
+      </div>
+
+      <div class="ttd">
+        <div class="kotak">
+          <div id="ttdTanggal"></div>
+          <div>Mengetahui,<br>Kepala Sekolah</div>
+          <img id="ttdGambar" alt="" class="hide">
+          <div id="ttdSpasi" style="height:64px;"></div>
+          <div class="nama-ttd" id="ttdNama">-</div>
+          <div id="ttdNip"></div>
+        </div>
+      </div>
+      <div class="catatan-cetak" id="catatanCetak"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+  if (!token || !userStr) window.location.href = "../../index.html";
+  const user = JSON.parse(userStr);
+  const ROLE_BOLEH = ["operator", "super_admin", "kepala_sekolah", "wali_kelas"];
+  if (ROLE_BOLEH.indexOf(user.role) === -1) {
+    alert("Akses ditolak. Halaman ini untuk Operator, Super Admin, Kepala Sekolah, dan Wali Kelas.");
+    window.location.href = "../../index.html";
+  }
+
+  const el = (id) => document.getElementById(id);
+  const state = { periode: "harian", jenis: "siswa", data: null, chart: null, kolomUtama: [], kolomKelas: [] };
+
+  function esc(v) {
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function kembali() {
+    const peta = { operator: "dashboard-operator", super_admin: "dashboard-operator", kepala_sekolah: "dashboard-kepsek", wali_kelas: "dashboard-wali-kelas" };
+    window.location.href = "../" + (peta[user.role] || "") + "/index.html";
+  }
+
+  async function callApi(action, extra) {
+    const body = Object.assign({ action: action, token: token }, extra || {});
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(body) });
+    return res.json();
+  }
+
+  function tampilPesan(tipe, teks) {
+    const m = el("msg");
+    if (!teks) { m.className = "msg"; return; }
+    m.className = "msg show " + tipe;
+    m.textContent = teks;
+  }
+
+  // ---------- Default tanggal, bulan, tahun ajaran ----------
+  function pad(n) { return String(n).padStart(2, "0"); }
+  const now = new Date();
+  el("inTanggal").value = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+  el("inBulan").value = now.getFullYear() + "-" + pad(now.getMonth() + 1);
+  (function isiTahunAjaran() {
+    const y = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+    el("inTahun").innerHTML = [y, y - 1, y - 2].map(t => "<option value='" + t + "/" + (t + 1) + "'>" + t + "/" + (t + 1) + "</option>").join("");
+  })();
+
+  // ---------- Pembatasan role ----------
+  if (user.role === "wali_kelas") {
+    el("btnJenisGuru").classList.add("hide");
+    el("inKelas").disabled = true;
+  }
+
+  async function muatKelas() {
+    const h = await callApi("getKelasList");
+    if (!h.success) return;
+    const pilihan = h.data.filter(k => k.is_active !== false);
+    if (user.role === "wali_kelas") {
+      const milik = pilihan.find(k => k.wali_kelas_id === user.ref_id);
+      el("inKelas").innerHTML = milik
+        ? "<option value='" + esc(milik.kelas_id) + "'>" + esc(milik.nama_kelas) + " (kelas Anda)</option>"
+        : "<option value=''>Belum ada kelas</option>";
+      return;
+    }
+    el("inKelas").innerHTML = "<option value=''>Semua Kelas</option>" +
+      pilihan.map(k => "<option value='" + esc(k.kelas_id) + "'>" + esc(k.nama_kelas) + "</option>").join("");
+  }
+
+  // ---------- Kontrol filter ----------
+  function sinkronInput() {
+    const p = state.periode;
+    el("fTanggal").classList.toggle("hide", !(p === "harian" || p === "mingguan"));
+    el("fBulan").classList.toggle("hide", p !== "bulanan");
+    el("fTahun").classList.toggle("hide", p !== "tahunan");
+    el("lblTanggal").textContent = p === "mingguan" ? "Pilih tanggal (diambil minggunya)" : "Tanggal";
+    el("fKelas").classList.toggle("hide", state.jenis === "guru");
+  }
+
+  document.querySelectorAll("#segPeriode button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#segPeriode button").forEach(x => x.classList.remove("aktif"));
+    b.classList.add("aktif");
+    state.periode = b.dataset.periode;
+    sinkronInput();
+  }));
+  document.querySelectorAll("#segJenis button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#segJenis button").forEach(x => x.classList.remove("aktif"));
+    b.classList.add("aktif");
+    state.jenis = b.dataset.jenis;
+    sinkronInput();
+  }));
+
+  function setPeriodeUI(periode, jenis) {
+    state.periode = periode; state.jenis = jenis;
+    document.querySelectorAll("#segPeriode button").forEach(x => x.classList.toggle("aktif", x.dataset.periode === periode));
+    document.querySelectorAll("#segJenis button").forEach(x => x.classList.toggle("aktif", x.dataset.jenis === jenis));
+    sinkronInput();
+  }
+
+  // ---------- Ambil & tampilkan laporan ----------
+  el("btnTampil").addEventListener("click", tampilkan);
+
+  async function tampilkan() {
+    tampilPesan("info", "Memuat laporan... (untuk rentang panjang bisa beberapa detik)");
+    el("btnTampil").disabled = true;
+    try {
+      const h = await callApi("getLaporanAbsensi", {
+        periode: state.periode,
+        jenis: state.jenis,
+        tanggal: el("inTanggal").value,
+        bulan: el("inBulan").value,
+        tahun_ajaran: el("inTahun").value,
+        kelas_id: state.jenis === "guru" ? "" : el("inKelas").value
+      });
+      if (!h.success) { tampilPesan("err", h.message); el("hasil").classList.add("hide"); return; }
+      state.data = h.data;
+      tampilPesan("", "");
+      render();
+    } catch (e) {
+      tampilPesan("err", "Tidak bisa terhubung ke server. Periksa koneksi internet.");
+    } finally {
+      el("btnTampil").disabled = false;
+    }
+  }
+
+  // ---------- Definisi kolom tabel ----------
+  const LABEL_STATUS = { HADIR: "Hadir", TERLAMBAT: "Terlambat", SAKIT: "Sakit", IZIN: "Izin", DINAS: "Dinas", ALPA: "Alpa", BELUM_ABSEN: "Belum Absen", BELUM_ADA_KETERANGAN: "Tanpa Keterangan" };
+  const KELAS_STATUS = { HADIR: "b-hadir", TERLAMBAT: "b-terlambat", SAKIT: "b-izin", IZIN: "b-izin", DINAS: "b-izin", ALPA: "b-alpa", BELUM_ABSEN: "b-belum", BELUM_ADA_KETERANGAN: "b-belum" };
+  const persen = (v) => v + "%";
+
+  function kolomUntuk(d) {
+    if (d.periode === "harian") {
+      if (d.jenis === "guru") return {
+        kolom: [
+          { j: "No", v: (r, i) => i + 1 },
+          { j: "Nama Guru", v: r => r.nama, kiri: true },
+          { j: "NIP/NUPTK", v: r => r.id_tampil },
+          { j: "Status", v: r => r.status, f: r => r, status: true },
+          { j: "Datang", v: r => r.jam_datang || "-" },
+          { j: "Pulang", v: r => r.jam_pulang || "-" },
+          { j: "Terlambat (menit)", v: r => r.menit_terlambat || 0 }
+        ], baris: d.detail_harian
+      };
+      return {
+        kolom: [
+          { j: "No", v: (r, i) => i + 1 },
+          { j: "Nama Siswa", v: r => r.nama, kiri: true },
+          { j: "Kelas", v: r => r.nama_kelas },
+          { j: "Status", v: r => r.status, status: true },
+          { j: "Datang", v: r => r.jam_datang || "-" },
+          { j: "Pulang", v: r => r.jam_pulang || "-" },
+          { j: "Terlambat (menit)", v: r => r.menit_terlambat || 0 }
+        ], baris: d.detail_harian
+      };
+    }
+    if (d.jenis === "guru") return {
+      kolom: [
+        { j: "No", v: (r, i) => i + 1 },
+        { j: "Nama Guru", v: r => r.nama, kiri: true },
+        { j: "NIP/NUPTK", v: r => r.nip },
+        { j: "Hadir", v: r => r.hadir },
+        { j: "Terlambat", v: r => r.terlambat },
+        { j: "Tanpa Ket.", v: r => r.tanpa_ket },
+        { j: "% Hadir", v: r => r.persentase, f: persen },
+        { j: "Jurnal Terisi", v: r => r.jurnal_terisi },
+        { j: "Kelas Kosong", v: r => r.kelas_kosong }
+      ], baris: d.baris
+    };
+    return {
+      kolom: [
+        { j: "No", v: (r, i) => i + 1 },
+        { j: "Nama Siswa", v: r => r.nama, kiri: true },
+        { j: "Kelas", v: r => r.nama_kelas },
+        { j: "Hadir", v: r => r.hadir },
+        { j: "Terlambat", v: r => r.terlambat },
+        { j: "Sakit", v: r => r.sakit },
+        { j: "Izin", v: r => r.izin },
+        { j: "Dinas", v: r => r.dinas },
+        { j: "Alpa", v: r => r.alpa },
+        { j: "Tanpa Ket.", v: r => r.tanpa_ket },
+        { j: "% Hadir", v: r => r.persentase, f: persen }
+      ], baris: d.baris
+    };
+  }
+
+  const KOLOM_KELAS = [
+    { j: "No", v: (r, i) => i + 1 },
+    { j: "Kelas", v: r => r.nama_kelas, kiri: true },
+    { j: "Jumlah Siswa", v: r => r.jumlah_siswa },
+    { j: "Hadir (hari-siswa)", v: r => r.hadir },
+    { j: "Terlambat", v: r => r.terlambat },
+    { j: "Sakit/Izin/Dinas", v: r => r.sakit_izin },
+    { j: "Alpa/Tanpa Ket.", v: r => r.alpa_tanpa },
+    { j: "% Hadir", v: r => r.persentase, f: persen }
+  ];
+
+  function htmlSel(k, r, i) {
+    const nilai = k.v(r, i);
+    if (k.status) {
+      return "<td><span class='badge " + (KELAS_STATUS[nilai] || "b-belum") + "'>" + esc(LABEL_STATUS[nilai] || nilai) + "</span></td>";
+    }
+    const tampil = k.f ? k.f(nilai) : nilai;
+    return "<td class='" + (k.kiri ? "kiri" : "") + "'>" + esc(tampil) + "</td>";
+  }
+
+  function buatTabel(thead, tbody, kolom, baris, pesanKosong) {
+    el(thead).innerHTML = "<tr>" + kolom.map(k => "<th class='" + (k.kiri ? "kiri" : "") + "'>" + esc(k.j) + "</th>").join("") + "</tr>";
+    if (!baris || baris.length === 0) {
+      el(tbody).innerHTML = "<tr><td colspan='" + kolom.length + "' class='kosong'>" + esc(pesanKosong) + "</td></tr>";
+      return;
+    }
+    el(tbody).innerHTML = baris.map((r, i) => "<tr>" + kolom.map(k => htmlSel(k, r, i)).join("") + "</tr>").join("");
+  }
+
+  // ---------- Render ----------
+  function render() {
+    const d = state.data;
+    el("hasil").classList.remove("hide");
+
+    const subKelas = d.jenis === "siswa" ? (d.nama_kelas ? "Kelas " + d.nama_kelas : "Semua kelas") : "Seluruh guru aktif";
+    el("lblPeriode").textContent = d.label;
+    el("subPeriode").textContent = (d.jenis === "guru" ? "Laporan Absensi Guru" : "Laporan Absensi Siswa") + " · " + subKelas + " · Hari efektif: " + d.hari_efektif;
+
+    renderKartu(d);
+    renderGrafik(d);
+
+    const def = kolomUntuk(d);
+    state.kolomUtama = def.kolom;
+    buatTabel("theadUtama", "tbodyUtama", def.kolom, def.baris, "Belum ada data untuk periode ini.");
+
+    const adaKelas = d.jenis === "siswa" && d.periode !== "harian" && !d.kelas_id && d.per_kelas && d.per_kelas.length > 0;
+    el("blokPerKelas").classList.toggle("hide", !adaKelas);
+    if (adaKelas) buatTabel("theadKelas", "tbodyKelas", KOLOM_KELAS, d.per_kelas, "");
+
+    const s = d.sekolah;
+    el("kopNama").textContent = s.nama_sekolah;
+    el("kopAlamat").textContent = [s.alamat, s.telepon ? "Telp. " + s.telepon : "", s.email].filter(Boolean).join(" · ");
+    if (s.logo_url) { el("kopLogo").src = s.logo_url; el("kopLogo").classList.remove("hide"); } else { el("kopLogo").classList.add("hide"); }
+    el("cetakJudul").textContent = "Laporan Absensi " + (d.jenis === "guru" ? "Guru" : "Siswa");
+    el("cetakSub").textContent = d.label + " · " + subKelas;
+    el("ttdTanggal").textContent = d.dibuat_pada.split(" ").slice(0, 3).join(" ");
+    el("ttdNama").textContent = s.kepala_sekolah_nama || "............................";
+    el("ttdNip").textContent = s.kepala_sekolah_nip ? "NIP. " + s.kepala_sekolah_nip : "";
+    if (s.tanda_tangan_url) { el("ttdGambar").src = s.tanda_tangan_url; el("ttdGambar").classList.remove("hide"); el("ttdSpasi").classList.add("hide"); }
+    else { el("ttdGambar").classList.add("hide"); el("ttdSpasi").classList.remove("hide"); }
+    el("catatanCetak").textContent = "Dicetak oleh " + d.dibuat_oleh + " pada " + d.dibuat_pada +
+      ". Hari efektif dihitung dari tanggal yang memiliki catatan absensi. % Hadir = (Hadir + Terlambat) / Hari Efektif.";
+  }
+
+  function kartu(lbl, val, kelas) {
+    return "<div class='stat " + (kelas || "") + "'><div class='lbl'>" + esc(lbl) + "</div><div class='val'>" + esc(val) + "</div></div>";
+  }
+
+  function renderKartu(d) {
+    const r = d.ringkasan;
+    let h = kartu("Hari Efektif", d.hari_efektif, "biru");
+    if (d.jenis === "guru") {
+      h += kartu("Jumlah Guru", r.total_orang) + kartu("Hadir", r.hadir, "hijau") + kartu("Terlambat", r.terlambat, "oranye") +
+           kartu("Tanpa Keterangan", r.tanpa_ket, "merah") + kartu("% Kehadiran", r.persentase + "%", "hijau") +
+           kartu("Jurnal Terisi", r.jurnal_terisi, "ungu") + kartu("Kelas Kosong", r.kelas_kosong, "merah");
+    } else {
+      h += kartu("Jumlah Siswa", r.total_orang) + kartu("Hadir", r.hadir, "hijau") + kartu("Terlambat", r.terlambat, "oranye") +
+           kartu("Sakit/Izin/Dinas", r.sakit + r.izin + r.dinas, "ungu") + kartu("Alpa/Tanpa Ket.", r.alpa + r.tanpa_ket, "merah") +
+           kartu("% Kehadiran", r.persentase + "%", "hijau");
+    }
+    el("kartu").innerHTML = h;
+  }
+
+  const BULAN_PENDEK = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  function labelTren(t, mode) {
+    if (mode === "bulanan") { const [y, m] = t.split("-"); return BULAN_PENDEK[Number(m) - 1] + " " + y; }
+    const [y, m, dd] = t.split("-"); return dd + "/" + m;
+  }
+
+  function renderGrafik(d) {
+    if (state.chart) { state.chart.destroy(); state.chart = null; }
+    const adaData = d.tren && d.tren.length > 0;
+    el("cardGrafik").classList.toggle("hide", !adaData);
+    if (!adaData) return;
+    el("judulGrafik").textContent = d.tren_mode === "bulanan" ? "Grafik Kehadiran per Bulan (total hari-orang)" : "Grafik Kehadiran per Hari";
+    state.chart = new Chart(el("grafik"), {
+      type: "bar",
+      data: {
+        labels: d.tren.map(t => labelTren(t.tanggal, d.tren_mode)),
+        datasets: [
+          { label: "Hadir", data: d.tren.map(t => t.hadir), backgroundColor: "#1e7a33" },
+          { label: "Terlambat", data: d.tren.map(t => t.terlambat), backgroundColor: "#d98a1f" },
+          { label: "Tidak Hadir", data: d.tren.map(t => t.tidak_hadir), backgroundColor: "#b3261e" }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { position: "bottom" } }
+      }
+    });
+  }
+
+  // ---------- Export Excel ----------
+  el("btnExcel").addEventListener("click", () => {
+    const d = state.data;
+    if (!d) return;
+    if (typeof XLSX === "undefined") { alert("Library Excel belum termuat. Periksa koneksi internet lalu coba lagi."); return; }
+
+    const def = kolomUntuk(d);
+    const aoa = [
+      [d.sekolah.nama_sekolah],
+      ["Laporan Absensi " + (d.jenis === "guru" ? "Guru" : "Siswa")],
+      [d.label],
+      [d.jenis === "siswa" ? (d.nama_kelas ? "Kelas " + d.nama_kelas : "Semua kelas") : "Seluruh guru aktif"],
+      ["Hari efektif: " + d.hari_efektif],
+      [],
+      def.kolom.map(k => k.j)
+    ];
+    (def.baris || []).forEach((r, i) => {
+      aoa.push(def.kolom.map(k => {
+        const v = k.v(r, i);
+        return k.status ? (LABEL_STATUS[v] || v) : v;
+      }));
+    });
+    aoa.push([]);
+    aoa.push(["Dicetak oleh " + d.dibuat_oleh + " pada " + d.dibuat_pada]);
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = def.kolom.map((k, idx) => ({ wch: k.kiri ? 28 : (idx === 0 ? 5 : 14) }));
+    XLSX.utils.book_append_sheet(wb, ws, "Rekap");
+
+    if (d.jenis === "siswa" && d.periode !== "harian" && !d.kelas_id && d.per_kelas && d.per_kelas.length > 0) {
+      const aoa2 = [KOLOM_KELAS.map(k => k.j)];
+      d.per_kelas.forEach((r, i) => aoa2.push(KOLOM_KELAS.map(k => k.v(r, i))));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), "Per Kelas");
+    }
+
+    const nama = "Laporan_Absensi_" + (d.jenis === "guru" ? "Guru" : "Siswa") + "_" + d.periode + "_" + d.mulai + ".xlsx";
+    XLSX.writeFile(wb, nama);
+  });
+
+  // ---------- Cetak / simpan PDF ----------
+  el("btnCetak").addEventListener("click", () => {
+    if (!state.data) return;
+    document.title = "Laporan Absensi " + state.data.label;
+    window.print();
+  });
+
+  // ---------- Mulai ----------
+  (async function mulai() {
+    sinkronInput();
+    await muatKelas();
+    const q = new URLSearchParams(window.location.search);
+    const periode = ["harian", "mingguan", "bulanan", "tahunan"].indexOf(q.get("periode")) !== -1 ? q.get("periode") : "harian";
+    let jenis = q.get("jenis") === "guru" ? "guru" : "siswa";
+    if (user.role === "wali_kelas") jenis = "siswa";
+    setPeriodeUI(periode, jenis);
+    tampilkan();
+  })();
+</script>
+</body>
+</html>
 
