@@ -1,1 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Import & Naik Kelas — SMP ARIEFIBRAHIM</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root { --navy-dark:#14284d; --navy:#1a3260; --gold:#d4af37; --cream:#f5f4f0; --ink:#1a2233; --ink-soft:#5b6478; --border:#e3e0d5; --green:#1e7a33; --green-bg:#eaf6ec; --red:#b3261e; --red-bg:#fdecec; --blue:#1d5fbf; --blue-bg:#e8f0fd; --orange:#b5620a; --orange-bg:#fdf1e2; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink); }
+  .topbar { background:var(--navy-dark); color:#fff; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; }
+  .topbar .t { font-family:'Playfair Display',serif; font-weight:700; font-size:17px; }
+  .topbar .s { font-size:10.5px; color:#b9c2d6; }
+  .btn-back { background:rgba(255,255,255,.1); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-size:12.5px; cursor:pointer; }
+  .wrap { max-width:960px; margin:0 auto; padding:18px 14px 60px; }
+  .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:14px; }
+  .card h2 { font-family:'Playfair Display',serif; font-size:17px; color:var(--navy-dark); margin-bottom:6px; }
+  .card p, .hint { font-size:12.5px; color:var(--ink-soft); line-height:1.55; margin-bottom:12px; }
+  .seg { display:inline-flex; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; flex-wrap:wrap; margin-bottom:14px; }
+  .seg button { border:none; background:#fff; padding:9px 18px; font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:inherit; }
+  .seg button.aktif { background:var(--navy-dark); color:#fff; }
+  label { display:block; font-size:11.5px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
+  input[type=text], input[type=file], select { width:100%; padding:10px 11px; border:1.5px solid var(--border); border-radius:8px; font-size:13.5px; font-family:inherit; background:#fff; }
+  .btn { background:var(--navy-dark); color:#fff; border:none; padding:11px 18px; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn.gold { background:var(--gold); color:var(--navy-dark); } .btn.abu { background:#fff; color:var(--ink-soft); border:1.5px solid var(--border); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin-top:10px; }
+  .msg { display:none; padding:10px 12px; border-radius:8px; font-size:12.5px; margin-top:12px; line-height:1.5; }
+  .msg.show { display:block; } .msg.ok { background:var(--green-bg); color:var(--green); } .msg.err { background:var(--red-bg); color:var(--red); } .msg.info { background:var(--blue-bg); color:var(--blue); }
+  .tbl { overflow-x:auto; margin-top:12px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th { background:var(--navy-dark); color:#fff; text-align:left; padding:9px 10px; white-space:nowrap; font-size:11.5px; }
+  td { padding:7px 10px; border-top:1px solid var(--border); }
+  .ok-s { color:var(--green); font-weight:700; } .bad-s { color:var(--red); font-weight:700; }
+  .hide { display:none !important; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:600px){ .grid2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><div class="t">Import &amp; Naik Kelas</div><div class="s">Data siswa, kenaikan kelas, tahun ajaran</div></div>
+  <button class="btn-back" onclick="window.location.href='../dashboard-operator/index.html'">← Kembali</button>
+</div>
+
+<div class="wrap">
+  <div class="seg" id="seg">
+    <button data-p="import" class="aktif">Import Siswa (Excel)</button>
+    <button data-p="naik">Naik Kelas</button>
+    <button data-p="tahun">Tahun Ajaran</button>
+  </div>
+
+  <!-- ===== IMPORT ===== -->
+  <div id="p-import">
+    <div class="card">
+      <h2>1. Siapkan file Excel</h2>
+      <p>Unduh template, isi data siswa (satu siswa per baris), simpan sebagai .xlsx. Kolom wajib: <b>NIS, Nama Lengkap, Kelas</b>. Nama kelas harus sama dengan yang ada di menu Kelas (mis. VII-A). Kolom wali opsional, nomor WhatsApp boleh diawali 0 atau 62.</p>
+      <button class="btn abu" id="btnTemplate">⬇ Unduh Template Excel</button>
+    </div>
+    <div class="card">
+      <h2>2. Pilih file</h2>
+      <input type="file" id="fileExcel" accept=".xlsx,.xls,.csv">
+      <div class="msg" id="msgPeriksa"></div>
+      <div class="tbl hide" id="tblWrap"><table><thead><tr><th>Baris</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>L/P</th><th>Wali</th><th>Status</th></tr></thead><tbody id="tbPreview"></tbody></table></div>
+      <div class="row"><button class="btn gold" id="btnImport" disabled>Impor Data yang Valid</button></div>
+      <div class="msg" id="msgImport"></div>
+    </div>
+  </div>
+
+  <!-- ===== NAIK KELAS ===== -->
+  <div id="p-naik" class="hide">
+    <div class="card">
+      <h2>Naik Kelas</h2>
+      <p>Tentukan tujuan tiap kelas. Setiap siswa hanya pindah satu kali (VII-A→VIII-A dan VIII-A→IX-A aman diproses bersamaan). Pilih <b>LULUS</b> untuk menonaktifkan siswa kelas akhir; datanya tetap tersimpan. Sebelum diproses, sistem otomatis membuat <b>backup</b> spreadsheet. Tip: lakukan naik kelas <b>sebelum</b> mengimpor siswa baru.</p>
+      <div class="tbl"><table><thead><tr><th>Kelas</th><th>Tingkat</th><th>Siswa Aktif</th><th>Pindahkan ke</th></tr></thead><tbody id="tbNaik"><tr><td colspan="4">Memuat...</td></tr></tbody></table></div>
+      <div class="row"><button class="btn abu" id="btnSaran">Isi Saran Otomatis</button><button class="btn gold" id="btnNaik">Jalankan Naik Kelas</button></div>
+      <div class="msg" id="msgNaik"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAHUN AJARAN ===== -->
+  <div id="p-tahun" class="hide">
+    <div class="card">
+      <h2>Ganti Tahun Ajaran</h2>
+      <p>Tahun ajaran aktif sekarang: <b id="tahunSekarang">-</b> (semester <b id="semSekarang">-</b>). Riwayat absensi lama tidak dihapus; laporan "Tahunan" tetap bisa dipilih per tahun ajaran. Backup otomatis dibuat sebelum diproses.</p>
+      <div class="grid2">
+        <div><label>Tahun Ajaran Baru</label><input type="text" id="inTahun" placeholder="2027/2028"></div>
+        <div><label>Semester</label><select id="inSem"><option>Ganjil</option><option>Genap</option></select></div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-weight:500;font-size:12.5px;"><input type="checkbox" id="inArsip" checked style="width:auto;"> Arsipkan (nonaktifkan) semua jadwal mengajar lama — disarankan saat pergantian tahun</label>
+      <div class="row"><button class="btn gold" id="btnTahun">Terapkan</button></div>
+      <div class="msg" id="msgTahun"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+  if (!token || !userStr) window.location.href = "../../index.html";
+  const user = JSON.parse(userStr);
+  if (user.role !== "operator" && user.role !== "super_admin") { alert("Akses ditolak. Halaman ini khusus Operator/Super Admin."); window.location.href = "../../index.html"; }
+
+  const el = id => document.getElementById(id);
+  const esc = v => String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const api = async (action, extra) => (await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ action, token }, extra || {})) })).json();
+  function pesan(id, tipe, teks) { const m = el(id); if (!teks) { m.className = "msg"; return; } m.className = "msg show " + tipe; m.innerHTML = teks; }
+
+  document.querySelectorAll("#seg button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#seg button").forEach(x => x.classList.remove("aktif")); b.classList.add("aktif");
+    ["import","naik","tahun"].forEach(p => el("p-" + p).classList.toggle("hide", p !== b.dataset.p));
+    if (b.dataset.p === "naik") muatNaik();
+    if (b.dataset.p === "tahun") muatTahun();
+  }));
+
+  let kelasAktif = [], nisAda = {};
+
+  // ================= IMPORT =================
+  const ALIAS = {
+    nis: ["nis"], nisn: ["nisn"], nama_lengkap: ["namalengkap","nama","namasiswa"], kelas: ["kelas","namakelas","rombel"],
+    jenis_kelamin: ["jeniskelamin","jeniskelaminlp","jk","lp"], alamat: ["alamat"],
+    wali_nama: ["namawali","wali","namaortu","namaayahibu"],
+    wali_nomor: ["nowhatsappwali","nomorwhatsappwali","nowawali","nowa","nomorwali","hpwali","nohpwali"],
+    wali_hubungan: ["hubunganwali","hubungan"]
+  };
+  let validRows = [];
+
+  el("btnTemplate").addEventListener("click", () => {
+    const aoa = [["NIS","NISN","Nama Lengkap","Kelas","Jenis Kelamin (L/P)","Alamat","Nama Wali","No WhatsApp Wali","Hubungan Wali"],
+                 ["12345","0012345678","Contoh Siswa","VII-A","L","Jl. Contoh No. 1","Contoh Wali","081234567890","Ayah"]];
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "Siswa");
+    XLSX.writeFile(wb, "Template_Import_Siswa.xlsx");
+  });
+
+  async function siapkanReferensi() {
+    const [k, s] = await Promise.all([api("getKelasList"), api("getSiswaList")]);
+    kelasAktif = k.success ? k.data.filter(x => x.is_active !== false) : [];
+    nisAda = {}; if (s.success) s.data.forEach(x => { nisAda[String(x.nis).trim()] = true; });
+    return k.success && s.success;
+  }
+
+  el("fileExcel").addEventListener("change", async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    pesan("msgImport", "", ""); validRows = []; el("btnImport").disabled = true;
+    pesan("msgPeriksa", "info", "Membaca file...");
+    try {
+      if (!(await siapkanReferensi())) { pesan("msgPeriksa", "err", "Gagal memuat data kelas/siswa dari server."); return; }
+      const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "", raw: false });
+      if (data.length === 0) { pesan("msgPeriksa", "err", "File kosong."); return; }
+
+      const petaKolom = {};
+      Object.keys(data[0]).forEach(h => { const n = norm(h); Object.keys(ALIAS).forEach(f => { if (ALIAS[f].indexOf(n) !== -1) petaKolom[f] = h; }); });
+      const kurang = ["nis","nama_lengkap","kelas"].filter(f => !petaKolom[f]);
+      if (kurang.length) { pesan("msgPeriksa", "err", "Kolom wajib tidak ditemukan: " + kurang.join(", ") + ". Gunakan template."); return; }
+
+      const kelasNorm = {}; kelasAktif.forEach(k => { kelasNorm[norm(k.nama_kelas)] = true; });
+      const dalamFile = {}; let ok = 0, salah = 0; const html = [];
+      data.forEach((r, i) => {
+        const o = { _baris: i + 2 };
+        Object.keys(ALIAS).forEach(f => { o[f] = petaKolom[f] ? String(r[petaKolom[f]]).trim() : ""; });
+        let alasan = "";
+        if (!o.nis || !o.nama_lengkap || !o.kelas) alasan = "NIS/nama/kelas kosong";
+        else if (!kelasNorm[norm(o.kelas)]) alasan = "Kelas tidak ditemukan";
+        else if (nisAda[o.nis]) alasan = "NIS sudah terdaftar";
+        else if (dalamFile[o.nis]) alasan = "NIS ganda di file";
+        if (!alasan) { dalamFile[o.nis] = true; validRows.push(o); ok++; } else salah++;
+        if (i < 300) html.push("<tr><td>" + o._baris + "</td><td>" + esc(o.nis) + "</td><td>" + esc(o.nama_lengkap) + "</td><td>" + esc(o.kelas) + "</td><td>" + esc(o.jenis_kelamin) + "</td><td>" + esc(o.wali_nama) + "</td><td>" + (alasan ? "<span class='bad-s'>" + esc(alasan) + "</span>" : "<span class='ok-s'>Siap</span>") + "</td></tr>");
+      });
+      el("tbPreview").innerHTML = html.join(""); el("tblWrap").classList.remove("hide");
+      pesan("msgPeriksa", salah ? "info" : "ok", "<b>" + ok + "</b> baris siap diimpor, <b>" + salah + "</b> akan dilewati." + (data.length > 300 ? " (Tabel menampilkan 300 baris pertama.)" : "") + " Pastikan NIS yang diawali angka 0 tidak hilang di Excel (format kolom sebagai Teks).");
+      el("btnImport").disabled = ok === 0;
+    } catch (err) { pesan("msgPeriksa", "err", "Gagal membaca file: " + esc(err.message)); }
+  });
+
+  el("btnImport").addEventListener("click", async () => {
+    if (!validRows.length) return;
+    if (!confirm("Impor " + validRows.length + " siswa sekarang?")) return;
+    el("btnImport").disabled = true;
+    let berhasil = 0; const lewat = [];
+    try {
+      for (let i = 0; i < validRows.length; i += 100) {
+        pesan("msgImport", "info", "Mengimpor " + Math.min(i + 100, validRows.length) + " / " + validRows.length + "...");
+        const h = await api("importSiswaBanyak", { rows: validRows.slice(i, i + 100) });
+        if (!h.success) { pesan("msgImport", "err", "Berhenti di baris ke-" + (i + 1) + ": " + esc(h.message) + " (yang sebelumnya sudah masuk: " + berhasil + ")"); return; }
+        berhasil += h.data.berhasil; h.data.dilewati.forEach(d => lewat.push("baris " + d.baris + ": " + d.alasan));
+      }
+      pesan("msgImport", "ok", "Selesai. <b>" + berhasil + "</b> siswa berhasil diimpor." + (lewat.length ? "<br>Dilewati: " + esc(lewat.slice(0, 20).join("; ")) : "") + "<br>QR kartu bisa dicetak di menu Pusat QR.");
+      validRows = [];
+    } catch (e) { pesan("msgImport", "err", "Tidak bisa terhubung ke server. Cek menu Siswa sebelum mengulang, supaya tidak ganda (NIS ganda otomatis ditolak)."); }
+  });
+
+  // ================= NAIK KELAS =================
+  let siswaAktifPerKelas = {};
+  async function muatNaik() {
+    const [k, s] = await Promise.all([api("getKelasList"), api("getSiswaList")]);
+    if (!k.success || !s.success) { el("tbNaik").innerHTML = "<tr><td colspan='4'>Gagal memuat data.</td></tr>"; return; }
+    kelasAktif = k.data.filter(x => x.is_active !== false).sort((a, b) => Number(a.tingkat) - Number(b.tingkat) || String(a.nama_kelas).localeCompare(String(b.nama_kelas)));
+    siswaAktifPerKelas = {}; s.data.filter(x => x.is_active === true).forEach(x => { siswaAktifPerKelas[x.kelas_id] = (siswaAktifPerKelas[x.kelas_id] || 0) + 1; });
+    const opsi = (asal) => '<option value="">(tidak diubah)</option>' + kelasAktif.filter(x => x.kelas_id !== asal).map(x => '<option value="' + esc(x.kelas_id) + '">' + esc(x.nama_kelas) + "</option>").join("") + '<option value="LULUS">LULUS (nonaktifkan)</option>';
+    el("tbNaik").innerHTML = kelasAktif.map(k => "<tr><td>" + esc(k.nama_kelas) + "</td><td>" + esc(k.tingkat) + "</td><td>" + (siswaAktifPerKelas[k.kelas_id] || 0) + '</td><td><select data-asal="' + esc(k.kelas_id) + '">' + opsi(k.kelas_id) + "</select></td></tr>").join("") || "<tr><td colspan='4'>Belum ada kelas.</td></tr>";
+  }
+
+  el("btnSaran").addEventListener("click", () => {
+    const maks = Math.max.apply(null, kelasAktif.map(k => Number(k.tingkat)));
+    document.querySelectorAll("#tbNaik select").forEach(sel => {
+      const asal = kelasAktif.find(k => k.kelas_id === sel.dataset.asal); const t = Number(asal.tingkat);
+      if (t === maks) { sel.value = "LULUS"; return; }
+      const calon = kelasAktif.filter(k => Number(k.tingkat) === t + 1);
+      const huruf = String(asal.nama_kelas).trim().slice(-1).toUpperCase();
+      const pilih = calon.find(k => String(k.nama_kelas).trim().slice(-1).toUpperCase() === huruf) || calon[0];
+      sel.value = pilih ? pilih.kelas_id : "";
+    });
+    pesan("msgNaik", "info", "Saran terisi. Periksa kembali tiap baris sebelum menjalankan.");
+  });
+
+  el("btnNaik").addEventListener("click", async () => {
+    const pemetaan = [];
+    document.querySelectorAll("#tbNaik select").forEach(sel => { if (sel.value) pemetaan.push({ kelas_asal_id: sel.dataset.asal, kelas_tujuan_id: sel.value }); });
+    if (!pemetaan.length) { pesan("msgNaik", "err", "Belum ada kelas yang diatur."); return; }
+    let pindah = 0, lulus = 0;
+    pemetaan.forEach(p => { const n = siswaAktifPerKelas[p.kelas_asal_id] || 0; if (p.kelas_tujuan_id === "LULUS") lulus += n; else pindah += n; });
+    if (!confirm("Akan memindahkan " + pindah + " siswa dan meluluskan " + lulus + " siswa. Proses ini mengubah banyak data (backup dibuat otomatis). Lanjutkan?")) return;
+    el("btnNaik").disabled = true; pesan("msgNaik", "info", "Memproses (membuat backup lalu memindahkan)...");
+    try {
+      const h = await api("naikKelas", { pemetaan });
+      if (h.success) { pesan("msgNaik", "ok", "Berhasil. " + h.data.pindah + " siswa dipindah, " + h.data.lulus + " siswa diluluskan. Backup: " + (h.data.cadangan ? "dibuat" : "GAGAL dibuat, cek izin Drive") + "."); muatNaik(); }
+      else pesan("msgNaik", "err", esc(h.message));
+    } catch (e) { pesan("msgNaik", "err", "Koneksi terputus. Cek menu Siswa sebelum mengulang agar tidak terproses dua kali."); }
+    el("btnNaik").disabled = false;
+  });
+
+  // ================= TAHUN AJARAN =================
+  async function muatTahun() {
+    const h = await api("getDataSekolah"); const d = h.success ? (h.data || {}) : {};
+    el("tahunSekarang").textContent = d.tahun_ajaran_aktif || "-"; el("semSekarang").textContent = d.semester_aktif || "-";
+    const m = String(d.tahun_ajaran_aktif || "").match(/^(\d{4})\//);
+    if (m && !el("inTahun").value) el("inTahun").value = (Number(m[1]) + 1) + "/" + (Number(m[1]) + 2);
+    if (d.semester_aktif) el("inSem").value = d.semester_aktif === "Ganjil" ? "Genap" : "Ganjil";
+  }
+
+  el("btnTahun").addEventListener("click", async () => {
+    const tahun = el("inTahun").value.trim(), sem = el("inSem").value, arsip = el("inArsip").checked;
+    if (!/^\d{4}\/\d{4}$/.test(tahun)) { pesan("msgTahun", "err", "Format harus seperti 2027/2028."); return; }
+    if (!confirm("Ganti tahun ajaran ke " + tahun + " semester " + sem + (arsip ? " dan arsipkan semua jadwal lama" : "") + "?")) return;
+    el("btnTahun").disabled = true; pesan("msgTahun", "info", "Memproses...");
+    try {
+      const h = await api("gantiTahunAjaran", { tahun, semester: sem, arsip_jadwal: arsip });
+      if (h.success) { pesan("msgTahun", "ok", "Tahun ajaran aktif: " + esc(h.data.tahun) + " (" + esc(h.data.semester) + "). Kelas diperbarui: " + h.data.kelas_diperbarui + ", jadwal diarsipkan: " + h.data.jadwal_diarsip + ". Backup: " + (h.data.cadangan ? "dibuat" : "gagal dibuat") + "."); muatTahun(); }
+      else pesan("msgTahun", "err", esc(h.message));
+    } catch (e) { pesan("msgTahun", "err", "Tidak bisa terhubung ke server."); }
+    el("btnTahun").disabled = false;
+  });
+</script>
+</body>
+</html>
 
