@@ -1,1 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profil & Password — SMP ARIEFIBRAHIM</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --navy-dark:#14284d; --navy:#1a3260; --gold:#d4af37; --cream:#f5f4f0; --ink:#1a2233; --ink-soft:#5b6478; --border:#e3e0d5; --green:#1e7a33; --green-bg:#eaf6ec; --red:#b3261e; --red-bg:#fdecec; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink); }
+  .topbar { background:var(--navy-dark); color:#fff; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; }
+  .topbar .t { font-family:'Playfair Display',serif; font-weight:700; font-size:17px; }
+  .topbar .s { font-size:10.5px; color:#b9c2d6; }
+  .btn-back { background:rgba(255,255,255,.1); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-size:12.5px; cursor:pointer; }
+  .wrap { max-width:520px; margin:0 auto; padding:22px 16px 60px; }
+  .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:16px; }
+  .card h2 { font-family:'Playfair Display',serif; font-size:17px; color:var(--navy-dark); margin-bottom:4px; }
+  .card p { font-size:12.5px; color:var(--ink-soft); margin-bottom:14px; }
+  label { display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin:12px 0 5px; }
+  input, select { width:100%; padding:11px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; }
+  input:focus, select:focus { outline:none; border-color:var(--navy); }
+  .btn { margin-top:16px; width:100%; background:var(--navy-dark); color:#fff; border:none; padding:12px; border-radius:9px; font-size:13.5px; font-weight:600; cursor:pointer; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .msg { display:none; padding:10px 12px; border-radius:8px; font-size:12.5px; margin-top:12px; }
+  .msg.show { display:block; } .msg.ok { background:var(--green-bg); color:var(--green); } .msg.err { background:var(--red-bg); color:var(--red); }
+  .hide { display:none; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><div class="t">Profil &amp; Password</div><div class="s" id="sub">SMP ARIEFIBRAHIM</div></div>
+  <button class="btn-back" onclick="kembali()">← Kembali</button>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <h2>Ganti Password Saya</h2>
+    <p>Password baru minimal 8 karakter dan tidak boleh sama dengan username.</p>
+    <label>Password Lama</label><input type="password" id="pwLama" autocomplete="current-password">
+    <label>Password Baru</label><input type="password" id="pwBaru" autocomplete="new-password">
+    <label>Ulangi Password Baru</label><input type="password" id="pwUlang" autocomplete="new-password">
+    <button class="btn" id="btnGanti">Simpan Password Baru</button>
+    <div class="msg" id="msgGanti"></div>
+  </div>
+
+  <div class="card hide" id="cardReset">
+    <h2>Atur Ulang Password Pengguna</h2>
+    <p>Untuk pengguna yang lupa password. Berikan password sementara, lalu minta pengguna menggantinya sendiri.</p>
+    <label>Pengguna</label><select id="selUser"><option value="">Memuat...</option></select>
+    <label>Password Sementara</label><input type="text" id="pwReset" placeholder="Minimal 8 karakter" autocomplete="off">
+    <button class="btn" id="btnReset">Atur Ulang Password</button>
+    <div class="msg" id="msgReset"></div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+  if (!token || !userStr) window.location.href = "../../index.html";
+  const user = JSON.parse(userStr);
+  const el = id => document.getElementById(id);
+  const esc = v => String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+  el("sub").textContent = user.nama_lengkap + " · " + user.role.replace("_", " ");
+
+  function kembali() {
+    const peta = { operator:"dashboard-operator", super_admin:"dashboard-operator", kepala_sekolah:"dashboard-kepsek", wali_kelas:"dashboard-wali-kelas", guru:"dashboard-guru", hale:"dashboard-hale" };
+    window.location.href = "../" + (peta[user.role] || "dashboard-operator") + "/index.html";
+  }
+  function pesan(id, tipe, teks) { const m = el(id); m.className = "msg show " + tipe; m.textContent = teks; }
+  async function api(action, extra) {
+    const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ action, token }, extra || {})) });
+    return r.json();
+  }
+
+  el("btnGanti").addEventListener("click", async () => {
+    const lama = el("pwLama").value, baru = el("pwBaru").value, ulang = el("pwUlang").value;
+    if (!lama || !baru) return pesan("msgGanti", "err", "Isi password lama dan baru.");
+    if (baru.length < 8) return pesan("msgGanti", "err", "Password baru minimal 8 karakter.");
+    if (baru !== ulang) return pesan("msgGanti", "err", "Ulangi password baru tidak sama.");
+    el("btnGanti").disabled = true;
+    try {
+      const h = await api("gantiPassword", { password: { lama, baru } });
+      if (h.success) { pesan("msgGanti", "ok", "Password berhasil diganti. Gunakan password baru saat login berikutnya."); ["pwLama","pwBaru","pwUlang"].forEach(i => el(i).value = ""); }
+      else pesan("msgGanti", "err", h.message);
+    } catch (e) { pesan("msgGanti", "err", "Tidak bisa terhubung ke server."); }
+    el("btnGanti").disabled = false;
+  });
+
+  if (user.role === "operator" || user.role === "super_admin") {
+    el("cardReset").classList.remove("hide");
+    (async () => {
+      const h = await api("getPenggunaList");
+      el("selUser").innerHTML = h.success
+        ? '<option value="">-- Pilih Pengguna --</option>' + h.data.filter(u => user.role === "super_admin" || ["operator","super_admin"].indexOf(u.role) === -1)
+            .map(u => '<option value="' + esc(u.user_id) + '">' + esc(u.nama_lengkap) + " (" + esc(u.username) + ")</option>").join("")
+        : '<option value="">Gagal memuat</option>';
+    })();
+    el("btnReset").addEventListener("click", async () => {
+      const uid = el("selUser").value, baru = el("pwReset").value;
+      if (!uid) return pesan("msgReset", "err", "Pilih pengguna dulu.");
+      if (baru.length < 8) return pesan("msgReset", "err", "Password sementara minimal 8 karakter.");
+      if (!confirm("Atur ulang password pengguna ini?")) return;
+      el("btnReset").disabled = true;
+      try {
+        const h = await api("resetPassword", { user_id: uid, password: { baru } });
+        if (h.success) { pesan("msgReset", "ok", "Password " + h.data.username + " berhasil diatur ulang."); el("pwReset").value = ""; }
+        else pesan("msgReset", "err", h.message);
+      } catch (e) { pesan("msgReset", "err", "Tidak bisa terhubung ke server."); }
+      el("btnReset").disabled = false;
+    });
+  }
+</script>
+</body>
+</html>
 
