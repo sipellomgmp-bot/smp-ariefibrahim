@@ -1,1 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keterangan Siswa — SMP ARIEFIBRAHIM</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --navy-dark:#14284d; --navy:#1a3260; --cream:#f5f4f0; --ink:#1a2233; --ink-soft:#5b6478; --border:#e3e0d5; --green:#1e7a33; --green-bg:#eaf6ec; --red:#b3261e; --red-bg:#fdecec; --blue-bg:#e8f0fd; --blue:#1d5fbf; --orange-bg:#fdf1e2; --orange:#b5620a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink); }
+  .topbar { background:var(--navy-dark); color:#fff; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; }
+  .topbar .t { font-family:'Playfair Display',serif; font-weight:700; font-size:17px; }
+  .topbar .s { font-size:10.5px; color:#b9c2d6; }
+  .btn-back { background:rgba(255,255,255,.1); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-size:12.5px; cursor:pointer; }
+  .wrap { max-width:960px; margin:0 auto; padding:20px 14px 60px; }
+  .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px 18px; margin-bottom:14px; }
+  .filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; align-items:end; }
+  label { display:block; font-size:11.5px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
+  input, select { width:100%; padding:10px 11px; border:1.5px solid var(--border); border-radius:8px; font-size:13.5px; font-family:inherit; background:#fff; }
+  .btn { background:var(--navy-dark); color:#fff; border:none; padding:11px 16px; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; }
+  .btn.kecil { padding:7px 12px; font-size:12px; } .btn.merah { background:var(--red-bg); color:var(--red); }
+  .btn:disabled { opacity:.5; }
+  .msg { display:none; padding:10px 12px; border-radius:8px; font-size:12.5px; margin-bottom:12px; }
+  .msg.show { display:block; } .msg.ok { background:var(--green-bg); color:var(--green); } .msg.err { background:var(--red-bg); color:var(--red); } .msg.info { background:var(--blue-bg); color:var(--blue); }
+  .tbl { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:var(--navy-dark); color:#fff; text-align:left; padding:10px; font-size:11.5px; white-space:nowrap; }
+  td { padding:8px 10px; border-top:1px solid var(--border); vertical-align:middle; }
+  .badge { padding:3px 10px; border-radius:99px; font-size:10.5px; font-weight:700; background:#eee; color:#666; white-space:nowrap; }
+  .b-ok { background:var(--green-bg); color:var(--green); } .b-ket { background:var(--blue-bg); color:var(--blue); } .b-alpa { background:var(--red-bg); color:var(--red); } .b-tl { background:var(--orange-bg); color:var(--orange); }
+  .aksi { display:flex; gap:6px; }
+  .kosong { text-align:center; padding:28px; color:var(--ink-soft); }
+  .hide { display:none !important; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><div class="t">Keterangan Siswa</div><div class="s">Catat Sakit / Izin / Dinas / Alpa</div></div>
+  <button class="btn-back" onclick="kembali()">← Kembali</button>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="filters">
+      <div><label>Tanggal</label><input type="date" id="inTanggal"></div>
+      <div id="fKelas"><label>Kelas</label><select id="inKelas"><option value="">-- Pilih Kelas --</option></select></div>
+      <div><button class="btn" id="btnMuat">Tampilkan Siswa</button></div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="card tbl hide" id="kartuTabel">
+    <table>
+      <thead><tr><th>No</th><th>Nama Siswa</th><th>Status Saat Ini</th><th>Catat Sebagai</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+  if (!token || !userStr) window.location.href = "../../index.html";
+  const user = JSON.parse(userStr);
+  if (["operator","super_admin","wali_kelas"].indexOf(user.role) === -1) {
+    alert("Akses ditolak. Halaman ini untuk Operator, Super Admin, dan Wali Kelas.");
+    window.location.href = "../../index.html";
+  }
+
+  const el = id => document.getElementById(id);
+  const esc = v => String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  const LABEL = { HADIR:"Hadir", TERLAMBAT:"Terlambat", SAKIT:"Sakit", IZIN:"Izin", DINAS:"Dinas", ALPA:"Alpa" };
+  let daftar = [], tanggalAktif = "";
+
+  function kembali() {
+    const peta = { operator:"dashboard-operator", super_admin:"dashboard-operator", wali_kelas:"dashboard-wali-kelas" };
+    window.location.href = "../" + peta[user.role] + "/index.html";
+  }
+  function pesan(tipe, teks) { const m = el("msg"); if (!teks) { m.className = "msg"; return; } m.className = "msg show " + tipe; m.textContent = teks; }
+  async function api(action, extra) {
+    const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ action, token }, extra || {})) });
+    return r.json();
+  }
+
+  const n = new Date(), p2 = x => String(x).padStart(2, "0");
+  el("inTanggal").value = n.getFullYear() + "-" + p2(n.getMonth() + 1) + "-" + p2(n.getDate());
+  el("inTanggal").max = el("inTanggal").value;
+  if (user.role === "wali_kelas") el("fKelas").classList.add("hide");
+
+  async function muatKelas() {
+    if (user.role === "wali_kelas") return;
+    const h = await api("getKelasList");
+    if (h.success) el("inKelas").innerHTML = '<option value="">-- Pilih Kelas --</option>' +
+      h.data.filter(k => k.is_active !== false).map(k => '<option value="' + esc(k.kelas_id) + '">' + esc(k.nama_kelas) + "</option>").join("");
+  }
+
+  function badgeStatus(s) {
+    if (!s) return '<span class="badge">Belum ada</span>';
+    const kls = s === "HADIR" ? "b-ok" : s === "TERLAMBAT" ? "b-tl" : s === "ALPA" ? "b-alpa" : "b-ket";
+    return '<span class="badge ' + kls + '">' + esc(LABEL[s] || s) + "</span>";
+  }
+
+  function gambar() {
+    el("kartuTabel").classList.remove("hide");
+    if (daftar.length === 0) { el("tbody").innerHTML = '<tr><td colspan="6" class="kosong">Tidak ada siswa aktif di kelas ini.</td></tr>'; return; }
+    el("tbody").innerHTML = daftar.map((s, i) => {
+      const adaKet = ["SAKIT","IZIN","DINAS","ALPA"].indexOf(s.status) !== -1;
+      if (!s.bisa_diubah) {
+        return "<tr><td>" + (i + 1) + "</td><td>" + esc(s.nama) + "</td><td>" + badgeStatus(s.status) + "</td><td colspan='3' style='color:#5b6478;font-size:12px;'>Sudah scan pukul " + esc(s.jam_datang) + " (tidak bisa diubah)</td></tr>";
+      }
+      return "<tr><td>" + (i + 1) + "</td><td>" + esc(s.nama) + "</td><td>" + badgeStatus(s.status) + "</td>" +
+        "<td><select id='st" + i + "'>" + ["SAKIT","IZIN","DINAS","ALPA"].map(x => "<option value='" + x + "'" + (s.status === x ? " selected" : "") + ">" + LABEL[x] + "</option>").join("") + "</select></td>" +
+        "<td><input type='text' id='kt" + i + "' maxlength='200' value='" + esc(s.keterangan) + "' placeholder='Opsional'></td>" +
+        "<td class='aksi'><button class='btn kecil' onclick='simpan(" + i + ")'>Simpan</button>" +
+        (adaKet ? "<button class='btn kecil merah' onclick='hapus(" + i + ")'>Hapus</button>" : "") + "</td></tr>";
+    }).join("");
+  }
+
+  async function muat() {
+    pesan("info", "Memuat...");
+    const h = await api("getDaftarKeterangan", { tanggal: el("inTanggal").value, kelas_id: el("inKelas").value });
+    if (!h.success) { pesan("err", h.message); el("kartuTabel").classList.add("hide"); return; }
+    pesan("", ""); daftar = h.data.siswa; tanggalAktif = h.data.tanggal; gambar();
+  }
+
+  async function simpan(i) {
+    const s = daftar[i];
+    const h = await api("catatKeteranganSiswa", { data: { siswa_id: s.siswa_id, tanggal: tanggalAktif, status: el("st" + i).value, keterangan: el("kt" + i).value.trim() } });
+    if (h.success) { pesan("ok", s.nama + " dicatat " + LABEL[h.data.status] + "."); muat(); } else pesan("err", h.message);
+  }
+  async function hapus(i) {
+    const s = daftar[i];
+    if (!confirm("Hapus keterangan " + s.nama + "?")) return;
+    const h = await api("hapusKeteranganSiswa", { siswa_id: s.siswa_id, tanggal: tanggalAktif });
+    if (h.success) { pesan("ok", "Keterangan dihapus."); muat(); } else pesan("err", h.message);
+  }
+
+  el("btnMuat").addEventListener("click", muat);
+  muatKelas().then(() => { if (user.role === "wali_kelas") muat(); });
+</script>
+</body>
+</html>
 
