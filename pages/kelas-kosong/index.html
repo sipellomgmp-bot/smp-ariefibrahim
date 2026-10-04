@@ -1,1 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoring Kelas — SMP ARIEFIBRAHIM</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root { --navy-dark:#14284d; --navy:#1a3260; --gold:#d4af37; --cream:#f5f4f0; --ink:#1a2233; --ink-soft:#5b6478; --border:#e3e0d5; --green:#1e7a33; --green-bg:#eaf6ec; --red:#b3261e; --red-bg:#fdecec; --blue:#1d5fbf; --blue-bg:#e8f0fd; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink); }
+  .topbar { background:var(--navy-dark); color:#fff; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; }
+  .topbar .t { font-family:'Playfair Display',serif; font-weight:700; font-size:17px; }
+  .topbar .s { font-size:10.5px; color:#b9c2d6; }
+  .btn-back { background:rgba(255,255,255,.1); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-size:12.5px; cursor:pointer; }
+  .wrap { max-width:760px; margin:0 auto; padding:18px 14px 60px; }
+  .ringkas { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .chip { background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px 14px; font-size:12px; color:var(--ink-soft); flex:1; min-width:110px; }
+  .chip b { display:block; font-family:'Playfair Display',serif; font-size:22px; color:var(--navy-dark); }
+  .msg { display:none; padding:10px 12px; border-radius:8px; font-size:12.5px; margin-bottom:12px; }
+  .msg.show { display:block; } .msg.ok { background:var(--green-bg); color:var(--green); } .msg.err { background:var(--red-bg); color:var(--red); } .msg.info { background:var(--blue-bg); color:var(--blue); }
+  .item { background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .item .jam { font-weight:700; font-size:13px; color:var(--navy-dark); }
+  .item .mp { font-size:14px; font-weight:600; margin:2px 0; }
+  .item .gr { font-size:12px; color:var(--ink-soft); }
+  .badge { padding:4px 11px; border-radius:99px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .b-ok { background:var(--green-bg); color:var(--green); } .b-kosong { background:var(--red-bg); color:var(--red); } .b-belum { background:#eee; color:#666; }
+  .btn { background:var(--navy-dark); color:#fff; border:none; padding:9px 14px; border-radius:9px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; }
+  .btn.abu { background:#fff; color:var(--ink-soft); border:1.5px solid var(--border); }
+  .kosong { text-align:center; padding:40px 16px; color:var(--ink-soft); font-size:13px; }
+
+  .overlay { display:none; position:fixed; inset:0; background:rgba(12,26,51,.7); z-index:50; align-items:center; justify-content:center; padding:16px; }
+  .overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:16px; padding:20px; width:100%; max-width:400px; }
+  .modal h3 { font-family:'Playfair Display',serif; color:var(--navy-dark); font-size:17px; margin-bottom:4px; }
+  .modal p { font-size:12.5px; color:var(--ink-soft); margin-bottom:12px; }
+  #reader { width:100%; border-radius:12px; overflow:hidden; border:3px solid var(--gold); }
+  .modal .row { display:flex; gap:10px; margin-top:14px; }
+  .modal .row .btn { flex:1; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><div class="t">Monitoring Kelas</div><div class="s">Jadwal hari ini · tandai kelas kosong</div></div>
+  <button class="btn-back" onclick="kembali()">← Kembali</button>
+</div>
+
+<div class="wrap">
+  <div class="ringkas">
+    <div class="chip"><b id="cTotal">-</b>Jadwal hari ini</div>
+    <div class="chip"><b id="cIsi">-</b>Terisi</div>
+    <div class="chip"><b id="cKosong">-</b>Kosong</div>
+    <div class="chip"><b id="cBelum">-</b>Belum jelas</div>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div id="daftar"><div class="kosong">Memuat jadwal...</div></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Tandai Kelas Kosong</h3>
+    <p id="infoModal">-</p>
+    <div id="reader"></div>
+    <p style="margin-top:10px;">Scan <b>QR Mata Pelajaran</b> yang ada di kelas tersebut sebagai bukti Anda sudah mengecek langsung.</p>
+    <div class="row"><button class="btn abu" onclick="tutupModal()">Batal</button></div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+  if (!token || !userStr) window.location.href = "../../index.html";
+  const user = JSON.parse(userStr);
+  if (["hale","operator","super_admin"].indexOf(user.role) === -1) {
+    alert("Akses ditolak. Halaman ini untuk Petugas Absensi, Operator, dan Super Admin.");
+    window.location.href = "../../index.html";
+  }
+
+  const el = id => document.getElementById(id);
+  const esc = v => String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  const api = async (action, extra) => (await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ action, token }, extra || {})) })).json();
+
+  let jadwal = [], jadwalAktif = null, scanner = null, sedangProses = false;
+
+  function kembali() {
+    window.location.href = "../" + (user.role === "hale" ? "dashboard-hale" : "dashboard-operator") + "/index.html";
+  }
+  function pesan(tipe, teks) { const m = el("msg"); if (!teks) { m.className = "msg"; return; } m.className = "msg show " + tipe; m.textContent = teks; }
+
+  function gambar() {
+    const n = s => jadwal.filter(j => j.status === s).length;
+    el("cTotal").textContent = jadwal.length; el("cIsi").textContent = n("TERISI");
+    el("cKosong").textContent = n("SUDAH_DITANDAI_KOSONG"); el("cBelum").textContent = n("BELUM_JELAS");
+    if (jadwal.length === 0) { el("daftar").innerHTML = '<div class="kosong">Tidak ada jadwal mengajar hari ini.</div>'; return; }
+    el("daftar").innerHTML = jadwal.map((j, i) => {
+      let aksi;
+      if (j.status === "TERISI") aksi = '<span class="badge b-ok">Terisi</span>';
+      else if (j.status === "SUDAH_DITANDAI_KOSONG") aksi = '<span class="badge b-kosong">Kosong</span>';
+      else aksi = '<span class="badge b-belum">Belum jelas</span> <button class="btn" onclick="bukaModal(' + i + ')">Tandai Kosong</button>';
+      return '<div class="item"><div><div class="jam">' + esc(j.jam_mulai) + ' - ' + esc(j.jam_selesai) + ' · ' + esc(j.nama_kelas) + '</div>' +
+        '<div class="mp">' + esc(j.nama_mapel) + '</div><div class="gr">' + esc(j.nama_guru) + '</div></div><div style="text-align:right;">' + aksi + '</div></div>';
+    }).join("");
+  }
+
+  async function muat() {
+    try {
+      const h = await api("getJadwalUntukMonitoring");
+      if (!h.success) { pesan("err", h.message); return; }
+      jadwal = h.data; gambar();
+    } catch (e) { pesan("err", "Tidak bisa terhubung ke server."); }
+  }
+
+  function bukaModal(i) {
+    jadwalAktif = jadwal[i]; sedangProses = false;
+    el("infoModal").textContent = jadwalAktif.jam_mulai + "-" + jadwalAktif.jam_selesai + " · " + jadwalAktif.nama_kelas + " · " + jadwalAktif.nama_mapel + " · " + jadwalAktif.nama_guru;
+    el("overlay").classList.add("show");
+    scanner = new Html5Qrcode("reader");
+    scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 220, height: 220 } }, onScan, () => {})
+      .catch(() => { tutupModal(); pesan("err", "Gagal membuka kamera. Izinkan akses kamera di browser."); });
+  }
+
+  async function tutupModal() {
+    el("overlay").classList.remove("show");
+    if (scanner) { try { await scanner.stop(); } catch (e) {} try { scanner.clear(); } catch (e) {} scanner = null; }
+  }
+
+  async function onScan(qr) {
+    if (sedangProses || !jadwalAktif) return;
+    sedangProses = true;
+    const j = jadwalAktif;
+    await tutupModal();
+    try {
+      const h = await api("tandaiKelasKosong", { jadwal_id: j.jadwal_id, qr_value: qr });
+      if (h.success) {
+        pesan("ok", "Kelas " + j.nama_kelas + " (" + j.nama_mapel + ") ditandai kosong." + (h.data.streak_kosong >= 3 && h.data.streak_kosong % 3 === 0 ? " Peringatan WhatsApp ke guru dijadwalkan." : ""));
+        muat();
+      } else pesan("err", h.message);
+    } catch (e) { pesan("err", "Tidak bisa terhubung ke server."); }
+    sedangProses = false;
+  }
+
+  muat();
+  setInterval(() => { if (!el("overlay").classList.contains("show")) muat(); }, 60000);
+</script>
+</body>
+</html>
 
