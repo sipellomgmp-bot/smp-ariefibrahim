@@ -3,7 +3,7 @@
  *  - Operator/Super Admin : Pusat QR, Kelas Kosong, Keterangan Siswa, Ganti Password
  *  - Petugas Absensi (Hale): Kelas Kosong, Ganti Password
  *  - Wali Kelas            : Keterangan Siswa, Ganti Password
- *  - Guru/Kepala Sekolah   : Ganti Password
+ *  - Guru/Wali Kelas/Kepala Sekolah: + Absensi Kehadiran (Wajah) & Daftar Wajah Saya
  */
 (function () {
   "use strict";
@@ -16,13 +16,20 @@
     qr: S('<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z"/>'),
     kosong: S('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'),
     ket: S('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/>'),
+    wajah: S('<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a6 6 0 0116 0v2M3 7V4h3M21 7V4h-3"/>'),
     pass: S('<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M7 10V7a5 5 0 0110 0v3"/>')
   };
 
   var role = user.role;
   var admin = role === "operator" || role === "super_admin";
   var MENU = [];
+  var guruan = role === "guru" || role === "wali_kelas" || role === "kepala_sekolah";
+  if (guruan) {
+    MENU.push(["Absensi Kehadiran (Wajah)", IKON.wajah, "../absen-wajah/index.html"]);
+    MENU.push(["Daftar Wajah Saya", IKON.wajah, "../daftar-wajah/index.html"]);
+  }
   if (admin) MENU.push(["Pusat QR (Cetak Kartu)", IKON.qr, "../pusat-qr/index.html"]);
+  if (admin) MENU.push(["Import & Naik Kelas", IKON.ket, "../import-naik-kelas/index.html"]);
   if (admin || role === "hale") MENU.push(["Monitoring Kelas Kosong", IKON.kosong, "../kelas-kosong/index.html"]);
   if (admin || role === "wali_kelas") MENU.push(["Keterangan Siswa", IKON.ket, "../keterangan/index.html"]);
   MENU.push(["Ganti Password", IKON.pass, "../profil/index.html"]);
