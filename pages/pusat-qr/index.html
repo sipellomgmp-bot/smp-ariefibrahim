@@ -1,1 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pusat QR — SMP ARIEFIBRAHIM</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+  :root { --navy-dark:#14284d; --navy:#1a3260; --gold:#d4af37; --cream:#f5f4f0; --ink:#1a2233; --ink-soft:#5b6478; --border:#e3e0d5; --red-bg:#fdecec; --red:#b3261e; --blue-bg:#e8f0fd; --blue:#1d5fbf; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink); }
+  .topbar { background:var(--navy-dark); color:#fff; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; }
+  .topbar .t { font-family:'Playfair Display',serif; font-weight:700; font-size:17px; }
+  .topbar .s { font-size:10.5px; color:#b9c2d6; }
+  .btn-back { background:rgba(255,255,255,.1); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-size:12.5px; cursor:pointer; }
+  .wrap { max-width:1100px; margin:0 auto; padding:18px 14px 60px; }
+  .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:16px 18px; margin-bottom:14px; }
+  .seg { display:inline-flex; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; flex-wrap:wrap; margin-bottom:14px; }
+  .seg button { border:none; background:#fff; padding:9px 18px; font-size:13px; font-weight:600; color:var(--ink-soft); cursor:pointer; font-family:inherit; }
+  .seg button.aktif { background:var(--navy-dark); color:#fff; }
+  .filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; align-items:end; }
+  label { display:block; font-size:11.5px; font-weight:600; color:var(--ink-soft); margin-bottom:5px; }
+  input, select { width:100%; padding:10px 11px; border:1.5px solid var(--border); border-radius:8px; font-size:13.5px; font-family:inherit; background:#fff; }
+  .btn { background:var(--gold); color:var(--navy-dark); border:none; padding:11px 18px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .msg { padding:10px 12px; border-radius:8px; font-size:12.5px; margin-bottom:12px; background:var(--blue-bg); color:var(--blue); }
+  .msg.err { background:var(--red-bg); color:var(--red); }
+  .hide { display:none !important; }
+
+  #area { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
+  .kartu { background:#fff; border:1.5px dashed #9aa4bd; border-radius:10px; padding:10px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; page-break-inside:avoid; break-inside:avoid; }
+  .kartu .sek { font-family:'Playfair Display',serif; font-weight:700; font-size:11px; color:var(--navy-dark); }
+  .kartu .tag { font-size:8.5px; letter-spacing:1px; font-weight:700; color:#fff; background:var(--navy-dark); padding:2px 8px; border-radius:99px; margin:4px 0 6px; }
+  .kartu img { width:130px; height:130px; image-rendering:pixelated; }
+  .kartu .jd { font-weight:700; font-size:12.5px; margin-top:6px; line-height:1.25; }
+  .kartu .b { font-size:10.5px; color:#444; margin-top:2px; line-height:1.3; }
+
+  @media print {
+    body { background:#fff; }
+    .no-print { display:none !important; }
+    .wrap { max-width:none; padding:0; }
+    #area { display:grid; grid-template-columns:repeat(3, 60mm); gap:4mm; justify-content:center; }
+    .kartu { width:60mm; height:84mm; border:1px dashed #777; border-radius:3mm; justify-content:center; padding:3mm; }
+    .kartu img { width:44mm; height:44mm; }
+    .kartu .sek { font-size:9pt; } .kartu .jd { font-size:10pt; } .kartu .b { font-size:8pt; } .kartu .tag { font-size:6.5pt; }
+    .kartu .tag { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    @page { size:A4 portrait; margin:8mm; }
+  }
+</style>
+</head>
+<body>
+<div class="topbar no-print">
+  <div><div class="t">Pusat QR</div><div class="s">Cetak kartu &amp; QR — SMP ARIEFIBRAHIM</div></div>
+  <button class="btn-back" onclick="window.location.href='../dashboard-operator/index.html'">← Kembali</button>
+</div>
+
+<div class="wrap">
+  <div class="card no-print">
+    <div class="seg" id="seg">
+      <button data-j="siswa" class="aktif">Kartu Siswa</button>
+      <button data-j="guru">Kartu Guru</button>
+      <button data-j="jadwal">QR Jadwal Mengajar</button>
+      <button data-j="mapel">QR Mata Pelajaran</button>
+    </div>
+    <div class="filters">
+      <div id="fKelas"><label>Kelas</label><select id="inKelas"><option value="">Semua Kelas</option></select></div>
+      <div><label>Cari nama</label><input type="text" id="inCari" placeholder="Ketik nama..."></div>
+      <div><button class="btn" id="btnCetak">🖨 Cetak yang Tampil</button></div>
+    </div>
+  </div>
+
+  <div class="msg no-print" id="info">Memuat data...</div>
+  <div id="area"></div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK1sHgZ3pPPYHS7NdyD8WFpVyPnDlCYs6q-hmnvhGG1CTLlg9dOKF6xYJr6ucihpZX/exec";
+  const token = sessionStorage.getItem("smp_token");
+  const userStr = sessionStorage.getItem("smp_user");
+  if (!token || !userStr) window.location.href = "../../index.html";
+  const user = JSON.parse(userStr);
+  if (user.role !== "operator" && user.role !== "super_admin") {
+    alert("Akses ditolak. Halaman ini khusus Operator/Super Admin.");
+    window.location.href = "../../index.html";
+  }
+
+  const el = id => document.getElementById(id);
+  const esc = v => String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  const api = async (action) => (await fetch(API_URL, { method: "POST", body: JSON.stringify({ action, token }) })).json();
+
+  let jenis = "siswa", namaSekolah = "SMP ARIEFIBRAHIM", D = { siswa: [], guru: [], jadwal: [], mapel: [], kelas: [] };
+
+  // QR dibuat di browser (tidak dikirim ke pihak ketiga)
+  function qrGambar(teks) {
+    const q = qrcode(0, "M"); q.addData(String(teks)); q.make();
+    return q.createDataURL(5, 1);
+  }
+
+  function itemUntuk(jenisData) {
+    if (jenisData === "siswa") return D.siswa.filter(s => s.is_active === true).map(s => ({ qr: s.qr_code_value, tag: "KARTU SISWA", jd: s.nama_lengkap, b1: "NIS: " + (s.nis || "-"), b2: s.nama_kelas || "", kelas_id: s.kelas_id }));
+    if (jenisData === "guru") return D.guru.filter(g => g.is_active === true).map(g => ({ qr: g.qr_code_value, tag: "KARTU GURU", jd: g.nama_lengkap, b1: "NIP/NUPTK: " + (g.nip_nuptk || "-"), b2: "Guru" }));
+    if (jenisData === "jadwal") return D.jadwal.map(j => ({ qr: j.qr_code_value, tag: "QR JADWAL MENGAJAR", jd: j.nama_mapel, b1: j.nama_guru, b2: j.nama_kelas + " · " + j.hari + " " + j.jam_mulai + "-" + j.jam_selesai, kelas_id: j.kelas_id }));
+    return D.mapel.map(m => ({ qr: m.qr_code_value, tag: "QR MATA PELAJARAN", jd: m.nama_mapel, b1: m.kode ? "Kode: " + m.kode : "", b2: "Untuk Petugas Absensi" }));
+  }
+
+  function gambar() {
+    const kelas = el("inKelas").value, cari = el("inCari").value.trim().toLowerCase();
+    let items = itemUntuk(jenis);
+    if (kelas && (jenis === "siswa" || jenis === "jadwal")) items = items.filter(i => i.kelas_id === kelas);
+    if (cari) items = items.filter(i => String(i.jd).toLowerCase().indexOf(cari) !== -1);
+
+    const tanpaQr = items.filter(i => !i.qr).length;
+    items = items.filter(i => i.qr);
+
+    let teks = items.length + " kartu siap cetak.";
+    if (tanpaQr) teks += " " + tanpaQr + " data belum punya QR (jalankan generateQRJadwalBelumAda / generateQRMapelBelumAda di Apps Script).";
+    el("info").className = "msg no-print" + (tanpaQr ? " err" : "");
+    el("info").textContent = teks;
+    el("btnCetak").disabled = items.length === 0;
+
+    el("area").innerHTML = items.map(i =>
+      '<div class="kartu"><div class="sek">' + esc(namaSekolah) + '</div><div class="tag">' + esc(i.tag) + '</div>' +
+      '<img alt="QR" src="' + qrGambar(i.qr) + '"><div class="jd">' + esc(i.jd) + '</div>' +
+      '<div class="b">' + esc(i.b1) + '</div><div class="b">' + esc(i.b2) + '</div></div>').join("");
+  }
+
+  document.querySelectorAll("#seg button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#seg button").forEach(x => x.classList.remove("aktif"));
+    b.classList.add("aktif"); jenis = b.dataset.j;
+    el("fKelas").classList.toggle("hide", jenis !== "siswa" && jenis !== "jadwal");
+    gambar();
+  }));
+  el("inKelas").addEventListener("change", gambar);
+  el("inCari").addEventListener("input", gambar);
+  el("btnCetak").addEventListener("click", () => window.print());
+
+  (async function mulai() {
+    try {
+      const [s, g, j, m, k, sk] = await Promise.all([api("getSiswaList"), api("getGuruList"), api("getJadwalList"), api("getMapelList"), api("getKelasList"), api("getDataSekolah")]);
+      D.siswa = s.success ? s.data : []; D.guru = g.success ? g.data : []; D.jadwal = j.success ? j.data : [];
+      D.mapel = m.success ? m.data : []; D.kelas = k.success ? k.data : [];
+      if (sk.success && sk.data && sk.data.nama_sekolah) namaSekolah = sk.data.nama_sekolah;
+      el("inKelas").innerHTML = '<option value="">Semua Kelas</option>' + D.kelas.filter(x => x.is_active !== false).map(x => '<option value="' + esc(x.kelas_id) + '">' + esc(x.nama_kelas) + "</option>").join("");
+      gambar();
+    } catch (e) {
+      el("info").className = "msg err no-print"; el("info").textContent = "Tidak bisa terhubung ke server. Periksa koneksi internet.";
+    }
+  })();
+</script>
+</body>
+</html>
 
