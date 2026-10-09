@@ -96,6 +96,7 @@
   if (!token || !userStr) window.location.href = "../../index.html";
   const user = JSON.parse(userStr);
   const ADMIN = user.role === "operator" || user.role === "super_admin";
+  if (!ADMIN) window.location.replace("../absen-wajah/index.html?mode=update");
   if (!ADMIN && ["guru", "wali_kelas", "kepala_sekolah"].indexOf(user.role) === -1) {
     alert("Akses ditolak.");
     window.location.href = "../../index.html";
