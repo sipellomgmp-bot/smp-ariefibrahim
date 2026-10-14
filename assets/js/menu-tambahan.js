@@ -1,9 +1,8 @@
 /**
- * menu-tambahan.js (VERSI TAHAP 3) — menambah menu ke sidebar sesuai role:
- *  - Operator/Super Admin : Pusat QR, Kelas Kosong, Keterangan Siswa, Ganti Password
- *  - Petugas Absensi (Hale): Kelas Kosong, Ganti Password
- *  - Wali Kelas            : Keterangan Siswa, Ganti Password
- *  - Guru/Wali Kelas/Kepala Sekolah: + Absensi Kehadiran (Wajah) & Daftar Wajah Saya
+ * menu-tambahan.js (VERSI SINKRON) — hanya menautkan halaman yang SUDAH ADA:
+ * absen-wajah, daftar-wajah, pusat-qr, import-naik-kelas, kelas-kosong, keterangan, profil.
+ * Tautan ke acara/kegiatan/jurnal-guru/monitoring-pembelajaran/siswa-kehadiran
+ * sengaja dikeluarkan sampai Tahap 5 & 6 selesai.
  */
 (function () {
   "use strict";
@@ -22,8 +21,9 @@
 
   var role = user.role;
   var admin = role === "operator" || role === "super_admin";
-  var MENU = [];
   var guruan = role === "guru" || role === "wali_kelas" || role === "kepala_sekolah";
+  var MENU = [];
+
   if (guruan) {
     MENU.push(["Absensi Kehadiran (Wajah)", IKON.wajah, "../absen-wajah/index.html"]);
     MENU.push(["Daftar / Update Wajah Saya", IKON.wajah, "../absen-wajah/index.html?mode=update"]);
@@ -32,9 +32,6 @@
   if (admin) MENU.push(["Import & Naik Kelas", IKON.ket, "../import-naik-kelas/index.html"]);
   if (admin || role === "hale") MENU.push(["Monitoring Kelas Kosong", IKON.kosong, "../kelas-kosong/index.html"]);
   if (admin || role === "wali_kelas") MENU.push(["Keterangan Siswa", IKON.ket, "../keterangan/index.html"]);
-  if (admin || role === "kepala_sekolah") MENU.push(["Monitoring Pembelajaran", IKON.kosong, "../monitoring-pembelajaran/index.html"]);
-  if (admin) MENU.push(["Kelola Kegiatan (Ekskul & Program)", IKON.ket, "../kegiatan/index.html"]);
-  MENU.push(["Acara & Absensi Wali Murid", IKON.qr, "../acara/index.html"]);
   MENU.push(["Ganti Password", IKON.pass, "../profil/index.html"]);
 
   function pasang() {
@@ -57,45 +54,10 @@
     });
   }
 
-  // ---- Ganti menu "Segera Hadir" dengan halaman nyata (sesuai role) ----
+  // Menu "Segera Hadir" yang sudah punya halaman nyata
   var ALIHKAN = {
-    operator: [
-      [/^Ekstrakurikuler/i, "../kegiatan/index.html?tab=ekskul"],
-      [/^Acara Sekolah/i, "../acara/index.html?tab=daftar"],
-      [/^Absensi Wali Murid/i, "../acara/index.html?tab=scan"],
-      [/^Buat Acara/i, "../acara/index.html?tab=daftar&baru=1"]
-    ],
-    super_admin: [
-      [/^Ekstrakurikuler/i, "../kegiatan/index.html?tab=ekskul"],
-      [/^Acara Sekolah/i, "../acara/index.html?tab=daftar"],
-      [/^Absensi Wali Murid/i, "../acara/index.html?tab=scan"],
-      [/^Buat Acara/i, "../acara/index.html?tab=daftar&baru=1"]
-    ],
-    wali_kelas: [
-      [/^Siswa Terlambat/i, "../siswa-kehadiran/index.html?mode=terlambat"],
-      [/^Siswa Tidak Hadir/i, "../siswa-kehadiran/index.html?mode=tidakhadir"],
-      [/^Prestasi/i, "../siswa-kehadiran/index.html?mode=peringkat"],
-      [/^Undangan/i, "../acara/index.html?tab=daftar"],
-      [/^Jadwal Mengajar/i, "../jurnal-guru/index.html?tab=minggu"],
-      [/^Isi Jurnal/i, "../jurnal-guru/index.html?tab=hari"],
-      [/^Rekap Jurnal/i, "../jurnal-guru/index.html?tab=riwayat"]
-    ],
-    guru: [
-      [/^Jadwal Mengajar/i, "../jurnal-guru/index.html?tab=minggu"],
-      [/^Daftar Kelas/i, "../jurnal-guru/index.html?tab=minggu"],
-      [/^Riwayat Absensi/i, "../jurnal-guru/index.html?tab=absensi"],
-      [/^Acara/i, "../acara/index.html?tab=daftar"],
-      [/^Buat Acara/i, "../acara/index.html?tab=daftar"],
-      [/^Profil/i, "../profil/index.html"]
-    ],
-    kepala_sekolah: [
-      [/^Jadwal\s*&\s*Pembelajaran/i, "../monitoring-pembelajaran/index.html?tab=hari"],
-      [/^Ranking\s*&\s*Klasemen/i, "../monitoring-pembelajaran/index.html?tab=rajin"],
-      [/^Ekstrakurikuler/i, "../kegiatan/index.html?tab=ekskul"],
-      [/^Acara Sekolah/i, "../acara/index.html?tab=daftar"],
-      [/^Laporan Program Unggulan/i, "../kegiatan/index.html?tab=program"],
-      [/^Pengaturan Akun/i, "../profil/index.html"]
-    ]
+    guru: [[/^Profil/i, "../profil/index.html"]],
+    kepala_sekolah: [[/^Pengaturan Akun/i, "../profil/index.html"]]
   };
   document.addEventListener("click", function (e) {
     var btn = e.target && e.target.closest ? e.target.closest(".nav-item, .qa-banner-btn, .quick-btn") : null;
@@ -112,7 +74,7 @@
     }
   }, true);
 
-  // ---- Bar menu bawah (HP) untuk Guru, Wali Kelas, Kepala Sekolah ----
+  // Bar menu bawah (HP) untuk Guru, Wali Kelas, Kepala Sekolah
   function pasangBar() {
     if (!guruan || document.getElementById("barBawahGuru")) return;
     var dash = { guru: "dashboard-guru", wali_kelas: "dashboard-wali-kelas", kepala_sekolah: "dashboard-kepsek" }[role];
